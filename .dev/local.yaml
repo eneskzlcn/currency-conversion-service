@@ -1,0 +1,4 @@
+jwtService:
+  privateKey: "MySecretKey"
+  tokenExpiration: "60m"
+
