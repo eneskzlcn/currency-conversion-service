@@ -15,3 +15,6 @@ migrate-tables:
 
 drop-tables:
 	go build -o postgres_drop  ./cmd/seed  && ./postgres_drop -type=drop && rm -rf postgres_drop && clear
+
+generate-mocks:
+	mockgen -destination=internal/mocks/auth/mock_user_repository.go -package mocks github.com/eneskzlcn/currency-conversion-service/internal/auth UserRepository
