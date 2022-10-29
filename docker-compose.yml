@@ -1,0 +1,14 @@
+version: '3'
+services:
+  postgres-db:
+    image: postgres:latest
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: "currency"
+      POSTGRES_USER: "currency"
+      POSTGRES_PASSWORD: "currency"
+    volumes:
+      - currency-volume:/var/lib/postgresql/data
+volumes:
+  currency-volume:
