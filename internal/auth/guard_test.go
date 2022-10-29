@@ -1,6 +1,7 @@
 package auth_test
 
 import (
+	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/internal/auth"
 	"github.com/eneskzlcn/currency-conversion-service/internal/config"
 	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
@@ -58,6 +59,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 		token, err := CreateMockValidToken(givenConfig, givenUser)
 		assert.Nil(t, err)
 
+		mockAuthService.EXPECT().ValidateToken(gomock.Any(), token).Return(nil)
 		req := makeTestRequestWithoutBodyToProtectedEndpoint(fiber.MethodGet, "/test", token)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
@@ -65,7 +67,9 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 	})
 
 	t.Run("given invalid token then it should return status unauthorized", func(t *testing.T) {
-		req := makeTestRequestWithoutBodyToProtectedEndpoint(fiber.MethodGet, "/test", "invalidtoken")
+		invalidToken := "invalidToken"
+		mockAuthService.EXPECT().ValidateToken(gomock.Any(), invalidToken).Return(errors.New("authentication error"))
+		req := makeTestRequestWithoutBodyToProtectedEndpoint(fiber.MethodGet, "/test", invalidToken)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)
