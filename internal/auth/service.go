@@ -9,3 +9,6 @@ type Service struct {
 func NewService(config config.Jwt) *Service {
 	return &Service{config: config}
 }
+func (s *Service) Tokenize(credentials UserTokenCredentials) (TokenResponse, error) {
+	panic("implement me")
+}
