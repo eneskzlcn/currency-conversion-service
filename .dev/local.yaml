@@ -1,4 +1,14 @@
-jwtService:
-  privateKey: "MySecretKey"
-  tokenExpiration: "60m"
+jwt:
+  atPrivateKey: "MySecretKey"
+  atExpiration: "60m"
+
+db:
+  username: "currency"
+  password: "currency"
+  dbName: "currency"
+  host: "localhost"
+  port: "5435"
+
+server:
+  port: "4000"
 
