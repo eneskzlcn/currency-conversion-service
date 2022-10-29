@@ -60,7 +60,7 @@ func Test_Tokenize(t *testing.T) {
 	authService, mockUserRepository := NewAuthServiceAndMockRepoWithDefaultConfig(t)
 
 	t.Run("given existing user credentials then it should return access token when Tokenize called", func(t *testing.T) {
-		givenCredentials := auth.UserAuthRequest{
+		givenCredentials := auth.LoginRequest{
 			Username: "iamexistinguser",
 			Password: "iamexistingpassword",
 		}
@@ -81,7 +81,7 @@ func Test_Tokenize(t *testing.T) {
 		assert.NotEmpty(t, accessToken)
 	})
 	t.Run("given not existing user credentials then it should return empty access token with error when Tokenize called", func(t *testing.T) {
-		givenCredentials := auth.UserAuthRequest{
+		givenCredentials := auth.LoginRequest{
 			Username: "iamnotexistinguser",
 			Password: "iamnotexistingpassword",
 		}

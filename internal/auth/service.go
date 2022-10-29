@@ -24,7 +24,7 @@ func NewService(config config.Jwt, repository UserRepository) *Service {
 	return &Service{config: config, userRepository: repository}
 }
 
-func (s *Service) Tokenize(ctx context.Context, credentials UserAuthRequest) (TokenResponse, error) {
+func (s *Service) Tokenize(ctx context.Context, credentials LoginRequest) (TokenResponse, error) {
 	user, err := s.userRepository.GetUserByUsernameAndPassword(ctx, credentials.Username, credentials.Password)
 	if err != nil {
 		return TokenResponse{}, err

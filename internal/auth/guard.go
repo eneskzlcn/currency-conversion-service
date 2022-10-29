@@ -9,7 +9,7 @@ import (
 type AuthService interface {
 	ValidateToken(ctx context.Context, tokenString string) error
 	ExtractUserIDFromToken(tokenString string) (int, error)
-	Tokenize(ctx context.Context, credentials UserAuthRequest) (TokenResponse, error)
+	Tokenize(ctx context.Context, request LoginRequest) (TokenResponse, error)
 }
 type Guard struct {
 	authService AuthService
