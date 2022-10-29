@@ -47,3 +47,6 @@ func (s *Service) Tokenize(ctx context.Context, credentials UserTokenCredentials
 		AccessToken: tokenString,
 	}, err
 }
+func (s *Service) ValidateToken(ctx context.Context, tokenString string) error {
+	panic("implement me")
+}
