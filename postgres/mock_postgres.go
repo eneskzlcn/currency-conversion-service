@@ -1,4 +1,4 @@
-package mocks
+package postgres
 
 import (
 	"database/sql"

@@ -8,7 +8,7 @@ start:
 	clear && go build -o bin/currency-conversion  ./cmd/currency-conversion && ./bin/currency-conversion
 
 clean:
-	rm -rf bin && clear
+	rm -rf bin && rm -rf internal/mocks && clear
 
 migrate-tables:
 	go build -o postgres_migrate  ./cmd/seed  && ./postgres_migrate -type=migrate && rm -rf postgres_migrate && clear
