@@ -1,5 +1,4 @@
-DROP TABLE currency;
-DROP TABLE exchange;
-DROP TABLE user;
-DROP TABLE wallet;
-DROP TABLE user_wallets;
+DROP TABLE IF EXISTS exchanges;
+DROP TABLE IF EXISTS user_wallets;
+DROP TABLE IF EXISTS currencies;
+DROP TABLE IF EXISTS users;
