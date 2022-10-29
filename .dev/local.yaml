@@ -1,6 +1,6 @@
 jwt:
   atPrivateKey: "MySecretKey"
-  atExpiration: "60m"
+  atExpirationSec: 60
 
 db:
   username: "currency"
