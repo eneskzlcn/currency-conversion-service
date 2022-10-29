@@ -24,7 +24,7 @@ func NewService(config config.Jwt, repository UserRepository) *Service {
 	return &Service{config: config, userRepository: repository}
 }
 
-func (s *Service) Tokenize(ctx context.Context, credentials UserTokenCredentials) (TokenResponse, error) {
+func (s *Service) Tokenize(ctx context.Context, credentials UserAuthRequest) (TokenResponse, error) {
 	user, err := s.userRepository.GetUserByUsernameAndPassword(ctx, credentials.Username, credentials.Password)
 	if err != nil {
 		return TokenResponse{}, err
@@ -67,4 +67,22 @@ func (s *Service) ValidateToken(ctx context.Context, tokenString string) error {
 		return errors.New("token expired")
 	}
 	return nil
+}
+
+func (s *Service) ExtractUserIDFromToken(tokenString string) (int, error) {
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		&JWTClaim{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(s.config.ATPrivateKey), nil
+		},
+	)
+	if err != nil {
+		return -1, err
+	}
+	if claims, ok := token.Claims.(*JWTClaim); ok {
+		return claims.UserID, nil
+	}
+
+	return -1, nil
 }

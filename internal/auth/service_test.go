@@ -23,6 +23,11 @@ func NewAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (*auth.Service, *m
 	mockUserRepository := mocks.NewMockUserRepository(ctrl)
 	return auth.NewService(givenConfig, mockUserRepository), mockUserRepository
 }
+func NewAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (*auth.Service, *mocks.MockUserRepository) {
+	ctrl := gomock.NewController(t)
+	mockUserRepository := mocks.NewMockUserRepository(ctrl)
+	return auth.NewService(config, mockUserRepository), mockUserRepository
+}
 func CreateMockValidToken(config config.Jwt, user entity.User) (string, error) {
 	tokenDuration := time.Duration(config.ATExpirationSeconds) * time.Second
 	expirationTime := time.Now().Add(tokenDuration)
@@ -55,7 +60,7 @@ func Test_Tokenize(t *testing.T) {
 	authService, mockUserRepository := NewAuthServiceAndMockRepoWithDefaultConfig(t)
 
 	t.Run("given existing user credentials then it should return access token when Tokenize called", func(t *testing.T) {
-		givenCredentials := auth.UserTokenCredentials{
+		givenCredentials := auth.UserAuthRequest{
 			Username: "iamexistinguser",
 			Password: "iamexistingpassword",
 		}
@@ -76,7 +81,7 @@ func Test_Tokenize(t *testing.T) {
 		assert.NotEmpty(t, accessToken)
 	})
 	t.Run("given not existing user credentials then it should return empty access token with error when Tokenize called", func(t *testing.T) {
-		givenCredentials := auth.UserTokenCredentials{
+		givenCredentials := auth.UserAuthRequest{
 			Username: "iamnotexistinguser",
 			Password: "iamnotexistingpassword",
 		}
@@ -130,5 +135,30 @@ func Test_ValidateToken(t *testing.T) {
 		time.Sleep(2 * time.Second)
 		err = authService.ValidateToken(context.Background(), token)
 		assert.NotNil(t, err)
+	})
+}
+
+func TestService_ExtractUserIDFromToken(t *testing.T) {
+	givenConfig := config.Jwt{
+		ATPrivateKey:        "mypr",
+		ATExpirationSeconds: 20,
+	}
+	authService, _ := NewAuthServiceAndMockRepoWithGivenConfig(t, givenConfig)
+	t.Run("given valid token then it should extract the user id from token when ExtractUserIDFromToken called", func(t *testing.T) {
+		givenUser := entity.User{
+			ID:       2,
+			Username: "asd",
+		}
+		token, err := CreateMockValidToken(givenConfig, givenUser)
+		assert.Nil(t, err)
+
+		userID, err := authService.ExtractUserIDFromToken(token)
+		assert.Nil(t, err)
+		assert.Equal(t, 2, userID)
+	})
+	t.Run("given invalid token then it should return -1 with error when ExtractUserIDFromToken called", func(t *testing.T) {
+		userID, err := authService.ExtractUserIDFromToken("not valid token")
+		assert.NotNil(t, err)
+		assert.Equal(t, -1, userID)
 	})
 }

@@ -2,7 +2,7 @@ package auth
 
 import "github.com/golang-jwt/jwt"
 
-type UserTokenCredentials struct {
+type UserAuthRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
