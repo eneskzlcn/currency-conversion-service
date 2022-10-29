@@ -46,7 +46,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 	guard := auth.NewGuard(mockAuthService)
 	app := CreateFiberAppWithAMockProtectedEndpoint(guard)
 
-	t.Run("given valid token then it should return status unauthorized", func(t *testing.T) {
+	t.Run("given valid token then it should call next handler without status unauthorized", func(t *testing.T) {
 		givenConfig := config.Jwt{
 			ATPrivateKey:        "private",
 			ATExpirationSeconds: 10,
@@ -60,6 +60,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 		assert.Nil(t, err)
 
 		mockAuthService.EXPECT().ValidateToken(gomock.Any(), token).Return(nil)
+		mockAuthService.EXPECT().ExtractUserIDFromToken(token).Return(givenUser.ID, nil)
 		req := makeTestRequestWithoutBodyToProtectedEndpoint(fiber.MethodGet, "/test", token)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
