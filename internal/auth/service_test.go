@@ -32,4 +32,13 @@ func Test_Tokenize(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotEmpty(t, accessToken)
 	})
+	t.Run("given not existing user credentials then it should return empty access token with error when Tokenize called", func(t *testing.T) {
+		givenCredentials := auth.UserTokenCredentials{
+			Username: "iamnotexistinguser",
+			Password: "iamnotexistingpassword",
+		}
+		accessToken, err := authService.Tokenize(givenCredentials)
+		assert.NotNil(t, err)
+		assert.Empty(t, accessToken)
+	})
 }
