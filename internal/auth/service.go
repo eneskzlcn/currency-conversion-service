@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/internal/config"
 	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
 	"github.com/golang-jwt/jwt"
@@ -48,5 +49,22 @@ func (s *Service) Tokenize(ctx context.Context, credentials UserTokenCredentials
 	}, err
 }
 func (s *Service) ValidateToken(ctx context.Context, tokenString string) error {
-	panic("implement me")
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		&JWTClaim{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(s.config.ATPrivateKey), nil
+		},
+	)
+	if err != nil {
+		return err
+	}
+	claims, ok := token.Claims.(*JWTClaim)
+	if !ok {
+		return errors.New("couldn't parse claims")
+	}
+	if claims.ExpiresAt < time.Now().Local().Unix() {
+		return errors.New("token expired")
+	}
+	return nil
 }

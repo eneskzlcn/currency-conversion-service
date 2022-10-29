@@ -95,7 +95,9 @@ func Test_ValidateToken(t *testing.T) {
 		ATPrivateKey:        "privateKey",
 		ATExpirationSeconds: 1,
 	}
-	authService := auth.NewService(config, nil)
+	ctrl := gomock.NewController(t)
+	mockUserRepository := mocks.NewMockUserRepository(ctrl)
+	authService := auth.NewService(config, mockUserRepository)
 
 	t.Run("given valid signed token then it should return nil when ValidateToken called", func(t *testing.T) {
 		givenUser := entity.User{
