@@ -24,5 +24,6 @@ func (h *Handler) Login(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(tokenResponse)
 }
 func (h *Handler) RegisterRoutes(app *fiber.App) {
-	app.Post("/login", h.Login)
+	appGroup := app.Group("/auth")
+	appGroup.Post("/login", h.Login)
 }
