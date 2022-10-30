@@ -1,16 +1,13 @@
 package auth_test
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/internal/auth"
+	"github.com/eneskzlcn/currency-conversion-service/internal/common/testutil"
 	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"io"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 )
@@ -33,7 +30,7 @@ func TestHandler_Login(t *testing.T) {
 	app.Post("/login", handler.Login)
 	t.Run("given not valid login request then it should return status bad request", func(t *testing.T) {
 		loginRequestData := "asdf"
-		request := makeTestRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
+		request := testutil.MakeTestRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
 		resp, err := app.Test(request)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
@@ -45,7 +42,7 @@ func TestHandler_Login(t *testing.T) {
 		}
 		mockAuthService.EXPECT().Tokenize(gomock.Any(), loginRequestData).
 			Return(auth.TokenResponse{}, errors.New("error occurred"))
-		request := makeTestRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
+		request := testutil.MakeTestRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
 		resp, err := app.Test(request)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
@@ -58,12 +55,12 @@ func TestHandler_Login(t *testing.T) {
 		expectedResponse := auth.TokenResponse{AccessToken: "someaccesstoken"}
 		mockAuthService.EXPECT().Tokenize(gomock.Any(), loginRequestData).
 			Return(expectedResponse, nil)
-		request := makeTestRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
+		request := testutil.MakeTestRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
 		resp, err := app.Test(request)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusCreated, resp.StatusCode)
 
-		assertBodyEqual(t, resp.Body, expectedResponse)
+		testutil.AssertBodyEqual(t, resp.Body, expectedResponse)
 	})
 }
 func TestRegisterRoutesSuccessfullyRegistersTheEndpointsToTheApp(t *testing.T) {
@@ -76,25 +73,9 @@ func TestRegisterRoutesSuccessfullyRegistersTheEndpointsToTheApp(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEqual(t, fiber.StatusNotFound, resp.StatusCode)
 }
-func makeTestRequestWithBody(method string, route string, body interface{}) *http.Request {
-	bodyBytes, _ := json.Marshal(body)
-	req := httptest.NewRequest(method, route, bytes.NewReader(bodyBytes))
-	req.Header.Set("Content-Type", "application/json")
-	return req
-}
 func createHandlerAndMockAuthService(t *testing.T) (*auth.Handler, *mocks.MockAuthService) {
 	ctrl := gomock.NewController(t)
 	mockAuthService := mocks.NewMockAuthService(ctrl)
 	handler := auth.NewHandler(mockAuthService)
 	return handler, mockAuthService
-}
-func assertBodyEqual(t *testing.T, responseBody io.Reader, expectedValue interface{}) {
-	var actualBody interface{}
-	_ = json.NewDecoder(responseBody).Decode(&actualBody)
-
-	expectedBodyAsJSON, _ := json.Marshal(expectedValue)
-
-	var expectedBody interface{}
-	_ = json.Unmarshal(expectedBodyAsJSON, &expectedBody)
-	assert.Equal(t, expectedBody, actualBody)
 }
