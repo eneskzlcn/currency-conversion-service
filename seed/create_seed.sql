@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS currencies (
 CREATE TABLE IF NOT EXISTS exchanges(
     currency_from VARCHAR NOT NULL REFERENCES currencies ON DELETE CASCADE ON UPDATE CASCADE,
     currency_to VARCHAR NOT NULL REFERENCES currencies ON DELETE CASCADE ON UPDATE CASCADE,
-    currency_rate FLOAT NOT NULL,
+    exchange_rate FLOAT NOT NULL,
     markup_rate FLOAT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
@@ -32,10 +32,10 @@ CREATE TABLE IF NOT EXISTS user_wallets(
 INSERT INTO currencies (code) VALUES ('TRY');
 INSERT INTO currencies (code) VALUES ('USD');
 
-INSERT INTO exchanges (currency_from, currency_to, currency_rate, markup_rate)
+INSERT INTO exchanges (currency_from, currency_to, exchange_rate, markup_rate)
 VALUES ('TRY', 'USD', 1.40, 0.2);
 
-INSERT INTO exchanges (currency_from, currency_to, currency_rate,markup_rate)
+INSERT INTO exchanges (currency_from, currency_to, exchange_rate,markup_rate)
 VALUES ('USD', 'TRY', 16.00, 0.3);
 
 INSERT INTO users (username, password) VALUES ('eneskzlcn', 'eneskzlcn');

@@ -21,3 +21,4 @@ generate-mocks:
 	mockgen -destination=internal/mocks/auth/mock_auth_service.go -package mocks github.com/eneskzlcn/currency-conversion-service/internal/auth AuthService
 	mockgen -destination=internal/mocks/exchange/mock_exchange_service.go -package mocks github.com/eneskzlcn/currency-conversion-service/internal/exchange ExchangeService
 	mockgen -destination=internal/mocks/exchange/mock_auth_guard.go -package mocks github.com/eneskzlcn/currency-conversion-service/internal/exchange AuthGuard
+	mockgen -destination=internal/mocks/exchange/mock_exchange_repository.go -package mocks github.com/eneskzlcn/currency-conversion-service/internal/exchange ExchangeRepository
