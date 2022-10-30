@@ -9,23 +9,23 @@ import (
 	"time"
 )
 
-type UserRepository interface {
+type AuthRepository interface {
 	GetUserByUsernameAndPassword(ctx context.Context, username string, password string) (entity.User, error)
 }
 type Service struct {
 	config         config.Jwt
-	userRepository UserRepository
+	authRepository AuthRepository
 }
 
-func NewService(config config.Jwt, repository UserRepository) *Service {
+func NewService(config config.Jwt, repository AuthRepository) *Service {
 	if repository == nil {
 		return nil
 	}
-	return &Service{config: config, userRepository: repository}
+	return &Service{config: config, authRepository: repository}
 }
 
 func (s *Service) Tokenize(ctx context.Context, credentials LoginRequest) (TokenResponse, error) {
-	user, err := s.userRepository.GetUserByUsernameAndPassword(ctx, credentials.Username, credentials.Password)
+	user, err := s.authRepository.GetUserByUsernameAndPassword(ctx, credentials.Username, credentials.Password)
 	if err != nil {
 		return TokenResponse{}, err
 	}
