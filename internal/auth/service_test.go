@@ -14,19 +14,19 @@ import (
 	"time"
 )
 
-func NewAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (*auth.Service, *mocks.MockUserRepository) {
+func NewAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (*auth.Service, *mocks.MockAuthRepository) {
 	givenConfig := config.Jwt{
 		ATPrivateKey:        "private",
 		ATExpirationSeconds: 200,
 	}
 	ctrl := gomock.NewController(t)
-	mockUserRepository := mocks.NewMockUserRepository(ctrl)
-	return auth.NewService(givenConfig, mockUserRepository), mockUserRepository
+	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
+	return auth.NewService(givenConfig, mockAuthRepository), mockAuthRepository
 }
-func NewAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (*auth.Service, *mocks.MockUserRepository) {
+func NewAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (*auth.Service, *mocks.MockAuthRepository) {
 	ctrl := gomock.NewController(t)
-	mockUserRepository := mocks.NewMockUserRepository(ctrl)
-	return auth.NewService(config, mockUserRepository), mockUserRepository
+	MockAuthRepository := mocks.NewMockAuthRepository(ctrl)
+	return auth.NewService(config, MockAuthRepository), MockAuthRepository
 }
 func CreateMockValidToken(config config.Jwt, user entity.User) (string, error) {
 	tokenDuration := time.Duration(config.ATExpirationSeconds) * time.Second
@@ -57,7 +57,7 @@ func Test_NewService(t *testing.T) {
 	})
 }
 func Test_Tokenize(t *testing.T) {
-	authService, mockUserRepository := NewAuthServiceAndMockRepoWithDefaultConfig(t)
+	authService, mockAuthRepository := NewAuthServiceAndMockRepoWithDefaultConfig(t)
 
 	t.Run("given existing user credentials then it should return access token when Tokenize called", func(t *testing.T) {
 		givenCredentials := auth.LoginRequest{
@@ -72,7 +72,7 @@ func Test_Tokenize(t *testing.T) {
 			UpdatedAt: time.Now(),
 		}
 		ctx := context.Background()
-		mockUserRepository.EXPECT().
+		mockAuthRepository.EXPECT().
 			GetUserByUsernameAndPassword(ctx, givenCredentials.Username, givenCredentials.Password).
 			Return(expectedUser, nil)
 
@@ -86,7 +86,7 @@ func Test_Tokenize(t *testing.T) {
 			Password: "iamnotexistingpassword",
 		}
 		ctx := context.Background()
-		mockUserRepository.EXPECT().
+		mockAuthRepository.EXPECT().
 			GetUserByUsernameAndPassword(ctx, givenCredentials.Username, givenCredentials.Password).
 			Return(entity.User{}, errors.New("user not found"))
 		accessToken, err := authService.Tokenize(ctx, givenCredentials)
@@ -101,8 +101,8 @@ func Test_ValidateToken(t *testing.T) {
 		ATExpirationSeconds: 1,
 	}
 	ctrl := gomock.NewController(t)
-	mockUserRepository := mocks.NewMockUserRepository(ctrl)
-	authService := auth.NewService(config, mockUserRepository)
+	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
+	authService := auth.NewService(config, mockAuthRepository)
 
 	t.Run("given valid signed token then it should return nil when ValidateToken called", func(t *testing.T) {
 		givenUser := entity.User{
