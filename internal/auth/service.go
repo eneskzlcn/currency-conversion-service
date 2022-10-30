@@ -48,7 +48,7 @@ func (s *Service) Tokenize(ctx context.Context, credentials LoginRequest) (Token
 		AccessToken: tokenString,
 	}, err
 }
-func (s *Service) ValidateToken(ctx context.Context, tokenString string) error {
+func (s *Service) ValidateToken(_ context.Context, tokenString string) error {
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		&JWTClaim{},
