@@ -26,5 +26,21 @@ func (r *Repository) IsCurrencyExists(ctx context.Context, currency string) (boo
 	return isExists, nil
 }
 func (r *Repository) GetExchangeValuesForGivenCurrencies(ctx context.Context, fromCurrency, toCurrency string) (entity.Exchange, error) {
-	panic("implement me")
+	query := `
+		SELECT currency_from, currency_to, exchange_rate, markup_rate, created_at, updated_at
+		FROM exchanges e WHERE currency_from = $1 AND currency_to = $2`
+
+	row := r.db.QueryRowContext(ctx, query, fromCurrency, toCurrency)
+	var exchange entity.Exchange
+	err := row.Scan(&exchange.FromCurrency,
+		&exchange.ToCurrency,
+		&exchange.ExchangeRate,
+		&exchange.MarkupRate,
+		&exchange.CreatedAt,
+		&exchange.UpdatedAt,
+	)
+	if err != nil {
+		return entity.Exchange{}, err
+	}
+	return exchange, nil
 }

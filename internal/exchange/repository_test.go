@@ -2,6 +2,7 @@ package exchange_test
 
 import (
 	"context"
+	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
 	"github.com/eneskzlcn/currency-conversion-service/internal/exchange"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
@@ -71,12 +72,20 @@ func TestRepository_GetExchangeValuesForGivenCurrencies(t *testing.T) {
 		sqlmock.ExpectQuery(query).WithArgs(givenCurrencyFrom, givenCurrencyTo).
 			WillReturnRows(expectedRows)
 
-		exchange, err := repository.GetExchangeValuesForGivenCurrencies(context.Background(), givenCurrencyFrom, givenCurrencyTo)
+		exchange, err := repository.GetExchangeValuesForGivenCurrencies(context.Background(),
+			givenCurrencyFrom, givenCurrencyTo)
 		assert.Nil(t, err)
 		assert.Nil(t, sqlmock.ExpectationsWereMet())
 		assert.Equal(t, expectedExchange, exchange)
 	})
 	t.Run("given not existing currencies then it should return error", func(t *testing.T) {
-
+		givenCurrencyFrom := "vxcxcg"
+		givenCurrencyTo := "sfasf"
+		sqlmock.ExpectQuery(query).WithArgs(givenCurrencyFrom, givenCurrencyTo).
+			WillReturnError(errors.New("exchange not found"))
+		exchange, err := repository.GetExchangeValuesForGivenCurrencies(context.Background(),
+			givenCurrencyFrom, givenCurrencyTo)
+		assert.NotNil(t, err)
+		assert.Empty(t, exchange)
 	})
 }
