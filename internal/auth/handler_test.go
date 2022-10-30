@@ -69,7 +69,7 @@ func TestRegisterRoutesSuccessfullyRegistersTheEndpointsToTheApp(t *testing.T) {
 	mockAuthService := mocks.NewMockAuthService(ctrl)
 	handler := auth.NewHandler(mockAuthService)
 	handler.RegisterRoutes(app)
-	resp, err := app.Test(httptest.NewRequest(fiber.MethodPost, "/login", nil))
+	resp, err := app.Test(httptest.NewRequest(fiber.MethodPost, "/auth/login", nil))
 	assert.Nil(t, err)
 	assert.NotEqual(t, fiber.StatusNotFound, resp.StatusCode)
 }

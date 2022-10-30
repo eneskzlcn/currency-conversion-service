@@ -8,7 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -36,7 +35,7 @@ func TestHandler_RegisterRoutes(t *testing.T) {
 	mockAuthGuard.EXPECT().ProtectWithJWT(gomock.Any()).Return(func(ctx *fiber.Ctx) error { return nil })
 	handler.RegisterRoutes(app)
 
-	assertRouteRegistered(t, app, fiber.MethodGet, "/exchange/rate")
+	testutil.AssertRouteRegistered(t, app, fiber.MethodGet, "/exchange/rate")
 }
 func TestHandler_GetExchangeRate(t *testing.T) {
 	app := fiber.New()
@@ -84,11 +83,7 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 		testutil.AssertBodyEqual(t, resp.Body, expectedResponse)
 	})
 }
-func assertRouteRegistered(t *testing.T, app *fiber.App, method, route string) {
-	resp, err := app.Test(httptest.NewRequest(method, route, nil))
-	assert.Nil(t, err)
-	assert.NotEqual(t, fiber.StatusNotFound, resp.StatusCode)
-}
+
 func createHandlerWithMockExchangeServiceAndAuthGuard(t *testing.T) (*exchange.Handler, *mocks.MockExchangeService, *mocks.MockAuthGuard) {
 	ctrl := gomock.NewController(t)
 	mockExchangeService := mocks.NewMockExchangeService(ctrl)

@@ -3,6 +3,7 @@ package testutil
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -26,4 +27,9 @@ func AssertBodyEqual(t *testing.T, responseBody io.Reader, expectedValue interfa
 	var expectedBody interface{}
 	_ = json.Unmarshal(expectedBodyAsJSON, &expectedBody)
 	assert.Equal(t, expectedBody, actualBody)
+}
+func AssertRouteRegistered(t *testing.T, app *fiber.App, method, route string) {
+	resp, err := app.Test(httptest.NewRequest(method, route, nil))
+	assert.Nil(t, err)
+	assert.NotEqual(t, fiber.StatusNotFound, resp.StatusCode)
 }
