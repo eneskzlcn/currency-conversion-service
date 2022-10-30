@@ -7,7 +7,7 @@ import (
 )
 
 type ExchangeRepository interface {
-	IsCurrencyExists(ctx context.Context, currency string) bool
+	IsCurrencyExists(ctx context.Context, currency string) (bool, error)
 	GetExchangeValuesForGivenCurrencies(ctx context.Context, fromCurrency, toCurrency string) (entity.Exchange, error)
 }
 type Service struct {
@@ -21,10 +21,18 @@ func NewService(repository ExchangeRepository) *Service {
 	return &Service{exchangeRepository: repository}
 }
 func (s *Service) CreateExchangeRate(ctx context.Context, request ExchangeRateRequest) (ExchangeRateResponse, error) {
-	if !s.exchangeRepository.IsCurrencyExists(ctx, request.FromCurrency) {
+	exists, err := s.exchangeRepository.IsCurrencyExists(ctx, request.FromCurrency)
+	if err != nil {
+		return ExchangeRateResponse{}, err
+	}
+	if !exists {
 		return ExchangeRateResponse{}, NotValidCurrencyErr
 	}
-	if !s.exchangeRepository.IsCurrencyExists(ctx, request.ToCurrency) {
+	exists, err = s.exchangeRepository.IsCurrencyExists(ctx, request.ToCurrency)
+	if err != nil {
+		return ExchangeRateResponse{}, err
+	}
+	if !exists {
 		return ExchangeRateResponse{}, NotValidCurrencyErr
 	}
 	exchange, err := s.exchangeRepository.
@@ -32,13 +40,13 @@ func (s *Service) CreateExchangeRate(ctx context.Context, request ExchangeRateRe
 	if err != nil {
 		return ExchangeRateResponse{}, err
 	}
-	exchangeRateOfferFeededWithMarkupRate := exchange.ExchangeRate + exchange.MarkupRate
+	exchangeRateOfferFeedWithMarkupRate := exchange.ExchangeRate + exchange.MarkupRate
 	createdAt := time.Now()
 	expiresAt := createdAt.Add(ExchangeRateExpirationMinutes * time.Minute)
 	return ExchangeRateResponse{
 		FromCurrency: exchange.FromCurrency,
 		ToCurrency:   exchange.ToCurrency,
-		ExchangeRate: exchangeRateOfferFeededWithMarkupRate,
+		ExchangeRate: exchangeRateOfferFeedWithMarkupRate,
 		CreatedAt:    createdAt,
 		ExpiresAt:    expiresAt,
 	}, nil
