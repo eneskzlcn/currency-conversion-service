@@ -17,7 +17,10 @@ func MakeTestRequestWithBody(method string, route string, body interface{}) *htt
 	req.Header.Set("Content-Type", "application/json")
 	return req
 }
-
+func MakeTestRequestWithoutBody(method string, route string) *http.Request {
+	req := httptest.NewRequest(method, route, nil)
+	return req
+}
 func AssertBodyEqual(t *testing.T, responseBody io.Reader, expectedValue interface{}) {
 	var actualBody interface{}
 	_ = json.NewDecoder(responseBody).Decode(&actualBody)
