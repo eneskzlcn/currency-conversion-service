@@ -1,3 +1,5 @@
+//go:build unit
+
 package conversion_test
 
 import (
