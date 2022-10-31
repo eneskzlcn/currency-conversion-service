@@ -69,6 +69,29 @@ func TestService_GetUserWalletAccounts(t *testing.T) {
 
 	})
 }
+func TestService_GetUserBalanceOnGivenCurrency(t *testing.T) {
+	service, mockWalletRepo := createServiceWithMockWalletRepository(t)
+	t.Run("given not existing user id then it should return -1 and error", func(t *testing.T) {
+		userID := 2
+		currency := "TRY"
+		expectedBalance := float32(-1)
+		mockWalletRepo.EXPECT().GetUserBalanceOnGivenCurrency(gomock.Any(), userID, currency).
+			Return(expectedBalance, errors.New("user not found"))
+		balance, err := service.GetUserBalanceOnGivenCurrency(context.TODO(), userID, currency)
+		assert.NotNil(t, err)
+		assert.LessOrEqual(t, balance, expectedBalance)
+	})
+	t.Run("given existing user id then it should return balance without error", func(t *testing.T) {
+		userID := 2
+		currency := "TRY"
+		expectedBalance := float32(200)
+		mockWalletRepo.EXPECT().GetUserBalanceOnGivenCurrency(gomock.Any(), userID, currency).
+			Return(expectedBalance, nil)
+		balance, err := service.GetUserBalanceOnGivenCurrency(context.TODO(), userID, currency)
+		assert.Nil(t, err)
+		assert.Equal(t, balance, expectedBalance)
+	})
+}
 func createServiceWithMockWalletRepository(t *testing.T) (*wallet.Service, *mocks.MockWalletRepository) {
 	ctrl := gomock.NewController(t)
 	mockWalletRepo := mocks.NewMockWalletRepository(ctrl)

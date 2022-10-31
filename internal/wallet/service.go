@@ -38,7 +38,7 @@ func (s *Service) GetUserWalletAccounts(ctx context.Context, userID int) (UserWa
 	return userWalletAccountsResponse, nil
 }
 func (s *Service) GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error) {
-	panic("implement me")
+	return s.walletRepository.GetUserBalanceOnGivenCurrency(ctx, userID, currency)
 }
 func (s *Service) AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error) {
 	panic("implement me")
