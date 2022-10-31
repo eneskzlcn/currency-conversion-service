@@ -16,13 +16,11 @@ func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *Repository {
 	return &Repository{db: db, logger: logger}
 }
 func (r *Repository) IsCurrencyExists(ctx context.Context, currency string) (bool, error) {
-	query := `SELECT EXISTS ( SELECT 1 FROM currencies c WHERE c.code = $1)`
+	query := `SELECT EXISTS ( SELECT 1 FROM currencies WHERE code = $1)`
 	row := r.db.QueryRowContext(ctx, query, currency)
 	var isExists bool
-	if err := row.Scan(&isExists); err != nil {
-		return false, err
-	}
-	return isExists, nil
+	err := row.Scan(&isExists)
+	return isExists, err
 }
 func (r *Repository) GetExchangeValuesForGivenCurrencies(ctx context.Context, fromCurrency, toCurrency string) (entity.Exchange, error) {
 	query := `

@@ -30,7 +30,7 @@ func run() error {
 		return err
 	}
 
-	logger, err := logger.NewZapLoggerForEnv(env, 1)
+	logger, err := logger.NewZapLoggerForEnv(env, 0)
 	if err != nil {
 		return err
 	}

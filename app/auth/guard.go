@@ -32,7 +32,6 @@ func (g *Guard) ProtectWithJWT(handler fiber.Handler) fiber.Handler {
 			return ctx.SendStatus(fiber.StatusUnauthorized)
 		}
 		userID, _ := g.authService.ExtractUserIDFromToken(token)
-		g.logger.Infof("Authorized user with ID: %d", userID)
 		ctx.Locals(common.USER_ID_CTX_KEY, userID)
 		return handler(ctx)
 	}

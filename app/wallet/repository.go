@@ -60,7 +60,7 @@ func (r *Repository) GetUserWalletAccounts(ctx context.Context, userID int) ([]e
 }
 
 func (r *Repository) GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error) {
-	query := `SELECT balance FROM user_wallets WHERE user_id = $2 AND currency_code = $2`
+	query := `SELECT balance FROM user_wallets WHERE user_id = $1 AND currency_code = $2`
 	row := r.db.QueryRowContext(ctx, query, userID, currency)
 	var balance float32
 	if err := row.Scan(&balance); err != nil {
@@ -72,7 +72,7 @@ func (r *Repository) AdjustUserBalanceOnGivenCurrency(ctx context.Context, userI
 	query := `
 	UPDATE user_wallets 
 	SET balance = balance + $1 
-	WHERE user_id = $2 AND currency_code = $2`
+	WHERE user_id = $2 AND currency_code = $3`
 	row := r.db.QueryRowContext(ctx, query, balance, userID, currency)
 	if err := row.Err(); err != nil {
 		return false, err

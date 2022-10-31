@@ -24,18 +24,22 @@ func NewService(walletService WalletService, logger *zap.SugaredLogger) *Service
 }
 func (s *Service) ConvertCurrencies(ctx context.Context, userID int, request CurrencyConversionOfferRequest) (bool, error) {
 	if !s.isValidConversionOfferExchangeRate(request.ExpiresAt) {
+		s.logger.Debug(CurrencyConversionOfferExpiredErr)
 		return false, CurrencyConversionOfferExpiredErr
 	}
 	isUserHasEnoughBalance, err := s.isUserHasEnoughBalanceToMakeConversion(ctx,
 		userID, request.FromCurrency, request.Balance)
 	if err != nil {
+		s.logger.Debug(err)
 		return false, err
 	}
 	if !isUserHasEnoughBalance {
+		s.logger.Debug(NotEnoughBalanceForConversionOfferErr)
 		return false, NotEnoughBalanceForConversionOfferErr
 	}
 	err = s.updateUserWalletBalancesByConversion(ctx, userID, request)
 	if err != nil {
+		s.logger.Debug(err)
 		return false, err
 	}
 	return true, nil

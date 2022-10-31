@@ -84,7 +84,7 @@ func TestRepository_GetUserWalletAccounts(t *testing.T) {
 func TestRepository_GetUserBalanceOnGivenCurrency(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
 	repository := wallet.NewRepository(db, zap.S())
-	query := regexp.QuoteMeta(`SELECT balance FROM user_wallets WHERE user_id = $2 AND currency_code = $2`)
+	query := regexp.QuoteMeta(`SELECT balance FROM user_wallets WHERE user_id = $1 AND currency_code = $2`)
 	t.Run("given existing wallet with user id and currency then it should return balance", func(t *testing.T) {
 		userID := 2
 		currency := "TRY"
@@ -112,7 +112,7 @@ func TestRepository_AdjustUserBalanceOnGivenCurrency(t *testing.T) {
 	query := regexp.QuoteMeta(`
 	UPDATE user_wallets 
 	SET balance = balance + $1 
-	WHERE user_id = $2 AND currency_code = $2`)
+	WHERE user_id = $2 AND currency_code = $3`)
 
 	t.Run("given existing wallet with user_id and currency_code then it should return true", func(t *testing.T) {
 		userID := 2

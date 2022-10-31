@@ -19,24 +19,15 @@ type Service struct {
 func NewService(repository ExchangeRepository, logger *zap.SugaredLogger) *Service {
 	return &Service{exchangeRepository: repository, logger: logger}
 }
-func (s *Service) CreateExchangeRate(ctx context.Context, request ExchangeRateRequest) (ExchangeRateResponse, error) {
-	exists, err := s.exchangeRepository.IsCurrencyExists(ctx, request.FromCurrency)
-	if err != nil {
+func (s *Service) PrepareExchangeRateOffer(ctx context.Context, request ExchangeRateRequest) (ExchangeRateResponse, error) {
+	if err := s.checkAreCurrenciesExists(ctx, request.FromCurrency, request.ToCurrency); err != nil {
+		s.logger.Debug(err)
 		return ExchangeRateResponse{}, err
-	}
-	if !exists {
-		return ExchangeRateResponse{}, NotValidCurrencyErr
-	}
-	exists, err = s.exchangeRepository.IsCurrencyExists(ctx, request.ToCurrency)
-	if err != nil {
-		return ExchangeRateResponse{}, err
-	}
-	if !exists {
-		return ExchangeRateResponse{}, NotValidCurrencyErr
 	}
 	exchange, err := s.exchangeRepository.
 		GetExchangeValuesForGivenCurrencies(ctx, request.FromCurrency, request.ToCurrency)
 	if err != nil {
+		s.logger.Debug(err)
 		return ExchangeRateResponse{}, err
 	}
 	exchangeRateOfferFeedWithMarkupRate := exchange.ExchangeRate + exchange.MarkupRate
@@ -49,4 +40,21 @@ func (s *Service) CreateExchangeRate(ctx context.Context, request ExchangeRateRe
 		CreatedAt:    createdAt,
 		ExpiresAt:    expiresAt,
 	}, nil
+}
+func (s *Service) checkAreCurrenciesExists(ctx context.Context, currencyFrom, currencyTo string) error {
+	exists, err := s.exchangeRepository.IsCurrencyExists(ctx, currencyFrom)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return NotValidCurrencyErr
+	}
+	exists, err = s.exchangeRepository.IsCurrencyExists(ctx, currencyTo)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return NotValidCurrencyErr
+	}
+	return nil
 }

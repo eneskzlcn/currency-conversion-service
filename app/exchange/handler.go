@@ -7,7 +7,7 @@ import (
 )
 
 type ExchangeService interface {
-	CreateExchangeRate(ctx context.Context, request ExchangeRateRequest) (ExchangeRateResponse, error)
+	PrepareExchangeRateOffer(ctx context.Context, request ExchangeRateRequest) (ExchangeRateResponse, error)
 }
 type AuthGuard interface {
 	ProtectWithJWT(handler fiber.Handler) fiber.Handler
@@ -26,7 +26,7 @@ func (h *Handler) GetExchangeRate(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&request); err != nil {
 		return ctx.SendStatus(fiber.StatusBadRequest)
 	}
-	exchangeRate, err := h.exchangeService.CreateExchangeRate(ctx.Context(), request)
+	exchangeRate, err := h.exchangeService.PrepareExchangeRateOffer(ctx.Context(), request)
 	if err != nil {
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
