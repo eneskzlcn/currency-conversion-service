@@ -69,7 +69,7 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 		userID := 3
 		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		req.Header.Set("userID", strconv.FormatInt(int64(userID), 10))
-		mockConversionService.EXPECT().CreateCurrencyConversion(gomock.Any(), userID, givenOfferRequest).
+		mockConversionService.EXPECT().ConvertCurrencies(gomock.Any(), userID, givenOfferRequest).
 			Return(false, errors.New(""))
 
 		resp, err := app.Test(req)
@@ -88,7 +88,7 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 		userID := 3
 		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		req.Header.Set("userID", strconv.FormatInt(int64(userID), 10))
-		mockConversionService.EXPECT().CreateCurrencyConversion(gomock.Any(), userID, givenOfferRequest).
+		mockConversionService.EXPECT().ConvertCurrencies(gomock.Any(), userID, givenOfferRequest).
 			Return(true, nil)
 
 		resp, err := app.Test(req)

@@ -7,7 +7,7 @@ import (
 )
 
 type ConversionService interface {
-	CreateCurrencyConversion(ctx context.Context, userID int, request CurrencyConversionOfferRequest) (bool, error)
+	ConvertCurrencies(ctx context.Context, userID int, request CurrencyConversionOfferRequest) (bool, error)
 }
 type AuthGuard interface {
 	ProtectWithJWT(handler fiber.Handler) fiber.Handler
@@ -34,7 +34,7 @@ func (h *Handler) CurrencyConversionOffer(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(fiber.StatusBadRequest)
 	}
 	success, err := h.conversionService.
-		CreateCurrencyConversion(ctx.Context(), int(userID), offerRequest)
+		ConvertCurrencies(ctx.Context(), int(userID), offerRequest)
 
 	if err != nil || !success {
 		return ctx.SendStatus(fiber.StatusInternalServerError)
