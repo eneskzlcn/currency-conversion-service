@@ -88,3 +88,28 @@ func TestRepository_GetUserWalletAccounts(t *testing.T) {
 		assert.Empty(t, userWallets)
 	})
 }
+func TestRepository_GetUserBalanceOnGivenCurrency(t *testing.T) {
+	db, sqlmock := postgres.NewMockPostgres()
+	repository := wallet.NewRepository(db)
+	query := regexp.QuoteMeta(`SELECT balance FROM user_wallets WHERE user_id = $2 AND currency_code = $2`)
+	t.Run("given existing wallet with user id and currency then it should return balance", func(t *testing.T) {
+		userID := 2
+		currency := "TRY"
+		expectedBalance := float32(200)
+		sqlmock.ExpectQuery(query).WithArgs(userID, currency).
+			WillReturnRows(sqlmock.NewRows([]string{"balance"}).
+				AddRow(expectedBalance))
+		balance, err := repository.GetUserBalanceOnGivenCurrency(context.TODO(), userID, currency)
+		assert.Nil(t, err)
+		assert.Equal(t, expectedBalance, balance)
+	})
+	t.Run("given not existing wallet with user id and currency then it should return -1 with error", func(t *testing.T) {
+		userID := 2
+		currency := "TRY"
+		expectedBalance := float32(-1)
+		sqlmock.ExpectQuery(query).WithArgs(userID, currency).WillReturnRows(sqlmock.NewRows([]string{"balance"}))
+		balance, err := repository.GetUserBalanceOnGivenCurrency(context.TODO(), userID, currency)
+		assert.NotNil(t, err)
+		assert.Equal(t, expectedBalance, balance)
+	})
+}
