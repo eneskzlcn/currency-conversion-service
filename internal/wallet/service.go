@@ -7,6 +7,8 @@ import (
 
 type WalletRepository interface {
 	GetUserWalletAccounts(ctx context.Context, userID int) ([]entity.UserWallet, error)
+	GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error)
+	AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error)
 	IsUserWithUserIDExists(ctx context.Context, userID int) (bool, error)
 }
 
@@ -34,4 +36,10 @@ func (s *Service) GetUserWalletAccounts(ctx context.Context, userID int) (UserWa
 	}
 	userWalletAccountsResponse := UserWalletAccountResponseFromUserWallets(userWalletsAccounts)
 	return userWalletAccountsResponse, nil
+}
+func (s *Service) GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error) {
+	panic("implement me")
+}
+func (s *Service) AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error) {
+	panic("implement me")
 }

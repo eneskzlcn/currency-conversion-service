@@ -17,14 +17,14 @@ func TestNewService(t *testing.T) {
 		assert.Nil(t, service)
 	})
 	t.Run("given valid arguments then it should return service", func(t *testing.T) {
-		mockWalletRepo := mocks.NewMockWalletRepository(gomock.NewController(t))
+		mockWalletRepo := mocks.NewMockWalletService(gomock.NewController(t))
 		service := conversion.NewService(mockWalletRepo)
 		assert.NotNil(t, service)
 	})
 }
 
 func TestService_CreateCurrencyConversion(t *testing.T) {
-	service, mockWalletRepository := createServiceWithMockConversionRepository(t)
+	service, mockWalletService := createServiceWithMockConversionRepository(t)
 	t.Run("given expired exchange offer request then it should return false with error", func(t *testing.T) {
 		givenConversionOfferReq := conversion.CurrencyConversionOfferRequest{
 			FromCurrency: "USD",
@@ -51,7 +51,7 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 		}
 		userID := 2
 
-		mockWalletRepository.EXPECT().
+		mockWalletService.EXPECT().
 			GetUserBalanceOnGivenCurrency(gomock.Any(), userID, givenConversionOfferReq.FromCurrency).
 			Return(float32(100), nil)
 		success, err := service.ConvertCurrencies(context.TODO(), userID, givenConversionOfferReq)
@@ -70,16 +70,16 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 		}
 		userID := 2
 		targetCurrencyBalanceAdjustAmount := givenConversionOfferReq.ExchangeRate * givenConversionOfferReq.Balance
-		mockWalletRepository.EXPECT().
+		mockWalletService.EXPECT().
 			GetUserBalanceOnGivenCurrency(gomock.Any(), userID, givenConversionOfferReq.FromCurrency).
 			Return(float32(500), nil)
 
-		mockWalletRepository.EXPECT().
+		mockWalletService.EXPECT().
 			AdjustUserBalanceOnGivenCurrency(gomock.Any(), userID,
 				givenConversionOfferReq.FromCurrency, givenConversionOfferReq.Balance).
 			Return(true, nil)
 
-		mockWalletRepository.EXPECT().
+		mockWalletService.EXPECT().
 			AdjustUserBalanceOnGivenCurrency(gomock.Any(), userID,
 				givenConversionOfferReq.ToCurrency, targetCurrencyBalanceAdjustAmount).
 			Return(true, nil)
@@ -89,8 +89,8 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 		assert.True(t, success)
 	})
 }
-func createServiceWithMockConversionRepository(t *testing.T) (*conversion.Service, *mocks.MockWalletRepository) {
+func createServiceWithMockConversionRepository(t *testing.T) (*conversion.Service, *mocks.MockWalletService) {
 	ctrl := gomock.NewController(t)
-	mockWalletRepo := mocks.NewMockWalletRepository(ctrl)
+	mockWalletRepo := mocks.NewMockWalletService(ctrl)
 	return conversion.NewService(mockWalletRepo), mockWalletRepo
 }
