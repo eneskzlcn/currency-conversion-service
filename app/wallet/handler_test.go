@@ -2,10 +2,10 @@ package wallet_test
 
 import (
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/internal/common"
-	"github.com/eneskzlcn/currency-conversion-service/internal/common/testutil"
-	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/wallet"
-	"github.com/eneskzlcn/currency-conversion-service/internal/wallet"
+	"github.com/eneskzlcn/currency-conversion-service/app/common"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
+	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/wallet"
+	"github.com/eneskzlcn/currency-conversion-service/app/wallet"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

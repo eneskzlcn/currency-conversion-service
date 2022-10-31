@@ -5,7 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/eneskzlcn/currency-conversion-service/internal/config"
+	"github.com/eneskzlcn/currency-conversion-service/config"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
 	"github.com/eneskzlcn/currency-conversion-service/seed"
 	"os"

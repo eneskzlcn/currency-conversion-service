@@ -2,9 +2,9 @@ package auth_test
 
 import (
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/internal/auth"
-	"github.com/eneskzlcn/currency-conversion-service/internal/common/testutil"
-	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/auth"
+	"github.com/eneskzlcn/currency-conversion-service/app/auth"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
+	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

@@ -3,8 +3,8 @@ package wallet_test
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
-	"github.com/eneskzlcn/currency-conversion-service/internal/wallet"
+	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/wallet"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

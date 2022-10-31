@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/eneskzlcn/currency-conversion-service/internal/auth"
-	"github.com/eneskzlcn/currency-conversion-service/internal/config"
-	"github.com/eneskzlcn/currency-conversion-service/internal/conversion"
-	"github.com/eneskzlcn/currency-conversion-service/internal/exchange"
-	"github.com/eneskzlcn/currency-conversion-service/internal/wallet"
+	"github.com/eneskzlcn/currency-conversion-service/app/auth"
+	"github.com/eneskzlcn/currency-conversion-service/app/conversion"
+	"github.com/eneskzlcn/currency-conversion-service/app/exchange"
+	"github.com/eneskzlcn/currency-conversion-service/app/wallet"
+	"github.com/eneskzlcn/currency-conversion-service/config"
 	"github.com/eneskzlcn/currency-conversion-service/logger"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
 	"github.com/eneskzlcn/currency-conversion-service/server"
@@ -30,7 +30,7 @@ func run() error {
 		return err
 	}
 
-	logger, err := logger.NewZapLoggerForEnv(env, 0)
+	logger, err := logger.NewZapLoggerForEnv(env, 1)
 	if err != nil {
 		return err
 	}
@@ -62,6 +62,6 @@ func run() error {
 		exchangeHandler,
 		conversionHandler,
 	}, configs.Server, logger)
-
+	logger.Sync()
 	return server.Start()
 }

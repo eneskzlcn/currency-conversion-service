@@ -1,6 +1,6 @@
 package wallet
 
-import "github.com/eneskzlcn/currency-conversion-service/internal/entity"
+import "github.com/eneskzlcn/currency-conversion-service/app/entity"
 
 type UserWalletAccountsResponse struct {
 	Accounts []UserWalletAccount `json:"accounts"`

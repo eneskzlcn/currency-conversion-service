@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	_ "errors"
 	"fmt"
-	"github.com/eneskzlcn/currency-conversion-service/internal/config"
+	"github.com/eneskzlcn/currency-conversion-service/config"
 	_ "github.com/lib/pq"
 )
 

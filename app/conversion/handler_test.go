@@ -2,10 +2,10 @@ package conversion_test
 
 import (
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/internal/common"
-	"github.com/eneskzlcn/currency-conversion-service/internal/common/testutil"
-	"github.com/eneskzlcn/currency-conversion-service/internal/conversion"
-	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/conversion"
+	"github.com/eneskzlcn/currency-conversion-service/app/common"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
+	"github.com/eneskzlcn/currency-conversion-service/app/conversion"
+	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/conversion"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

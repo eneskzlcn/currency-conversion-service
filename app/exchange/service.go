@@ -2,7 +2,7 @@ package exchange
 
 import (
 	"context"
-	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	"go.uber.org/zap"
 	"time"
 )

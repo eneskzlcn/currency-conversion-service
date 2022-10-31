@@ -2,9 +2,9 @@ package exchange_test
 
 import (
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/internal/common/testutil"
-	"github.com/eneskzlcn/currency-conversion-service/internal/exchange"
-	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/exchange"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
+	"github.com/eneskzlcn/currency-conversion-service/app/exchange"
+	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/exchange"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

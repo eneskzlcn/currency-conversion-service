@@ -2,7 +2,7 @@ package wallet
 
 import (
 	"context"
-	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	"go.uber.org/zap"
 )
 
@@ -31,10 +31,12 @@ func (s *Service) GetUserWalletAccounts(ctx context.Context, userID int) (UserWa
 		return UserWalletAccountsResponse{}, UserWithUserIDNotExistsErr
 	}
 	userWalletsAccounts, err := s.walletRepository.GetUserWalletAccounts(ctx, userID)
+	s.logger.Debug(userWalletsAccounts)
 	if err != nil {
 		return UserWalletAccountsResponse{}, err
 	}
 	userWalletAccountsResponse := UserWalletAccountResponseFromUserWallets(userWalletsAccounts)
+	s.logger.Debug(userWalletAccountsResponse)
 	return userWalletAccountsResponse, nil
 }
 

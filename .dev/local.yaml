@@ -10,5 +10,5 @@ db:
   port: "5435"
 
 server:
-  port: "4000"
+  port: "4001"
 

@@ -3,8 +3,8 @@ package conversion_test
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/internal/conversion"
-	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/conversion"
+	"github.com/eneskzlcn/currency-conversion-service/app/conversion"
+	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/conversion"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

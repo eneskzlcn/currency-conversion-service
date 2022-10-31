@@ -3,8 +3,8 @@ package auth
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/internal/config"
-	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/config"
 	"github.com/golang-jwt/jwt"
 	"go.uber.org/zap"
 	"time"

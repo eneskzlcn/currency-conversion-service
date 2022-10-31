@@ -3,9 +3,9 @@ package wallet_test
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
-	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/wallet"
-	"github.com/eneskzlcn/currency-conversion-service/internal/wallet"
+	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/wallet"
+	"github.com/eneskzlcn/currency-conversion-service/app/wallet"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

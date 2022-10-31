@@ -2,7 +2,7 @@ package conversion
 
 import (
 	"context"
-	"github.com/eneskzlcn/currency-conversion-service/internal/common"
+	"github.com/eneskzlcn/currency-conversion-service/app/common"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )

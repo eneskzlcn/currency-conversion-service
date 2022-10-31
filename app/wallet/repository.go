@@ -3,7 +3,7 @@ package wallet
 import (
 	"context"
 	"database/sql"
-	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	"go.uber.org/zap"
 )
 
@@ -32,18 +32,23 @@ func (r *Repository) GetUserWalletAccounts(ctx context.Context, userID int) ([]e
 		FROM user_wallets uw 
 		WHERE uw.user_id = $1`
 	rows, err := r.db.QueryContext(ctx, query, userID)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
-	userWallets := make([]entity.UserWallet, 0)
+	var userWallets []entity.UserWallet
 	for rows.Next() {
 		var wallet entity.UserWallet
-		err = rows.Scan(&wallet.UserID,
-			&wallet.Currency, &wallet.Balance, &wallet.CreatedAt,
+		err = rows.Scan(
+			&wallet.UserID,
+			&wallet.Currency,
+			&wallet.Balance,
+			&wallet.CreatedAt,
 			&wallet.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
+		userWallets = append(userWallets, wallet)
 	}
 	if err = rows.Close(); err != nil {
 		return nil, err

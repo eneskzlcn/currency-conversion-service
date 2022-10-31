@@ -3,8 +3,8 @@ package exchange_test
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
-	"github.com/eneskzlcn/currency-conversion-service/internal/exchange"
+	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/exchange"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

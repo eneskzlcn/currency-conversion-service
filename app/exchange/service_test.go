@@ -3,9 +3,9 @@ package exchange_test
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
-	"github.com/eneskzlcn/currency-conversion-service/internal/exchange"
-	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/exchange"
+	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/exchange"
+	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/exchange"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"

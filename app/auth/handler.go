@@ -22,6 +22,8 @@ func (h *Handler) Login(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
+	h.logger.Debugf("User logged in. Username: %s", request.Username)
+
 	return ctx.Status(fiber.StatusCreated).JSON(tokenResponse)
 }
 func (h *Handler) RegisterRoutes(app *fiber.App) {

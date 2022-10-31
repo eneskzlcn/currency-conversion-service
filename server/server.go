@@ -2,9 +2,10 @@ package server
 
 import (
 	"fmt"
-	"github.com/eneskzlcn/currency-conversion-service/internal/config"
+	"github.com/eneskzlcn/currency-conversion-service/config"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"go.uber.org/zap"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,20 +15,13 @@ type Handler interface {
 	RegisterRoutes(app *fiber.App)
 }
 
-type Logger interface {
-	Error(args ...interface{})
-}
-
 type Server struct {
 	app    *fiber.App
 	config config.Server
-	logger Logger
+	logger *zap.SugaredLogger
 }
 
-func New(handlers []Handler, config config.Server, logger Logger) *Server {
-	if logger == nil {
-		return nil
-	}
+func New(handlers []Handler, config config.Server, logger *zap.SugaredLogger) *Server {
 	app := fiber.New()
 	app.Use(cors.New(cors.ConfigDefault))
 	for _, handler := range handlers {
