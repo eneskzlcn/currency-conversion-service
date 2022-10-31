@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/eneskzlcn/currency-conversion-service/internal/common"
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 type WalletService interface {
@@ -15,20 +16,19 @@ type AuthGuard interface {
 type Handler struct {
 	walletService WalletService
 	authGuard     AuthGuard
+	logger        *zap.SugaredLogger
 }
 
-func NewHandler(service WalletService, guard AuthGuard) *Handler {
-	if service == nil || guard == nil {
-		return nil
-	}
+func NewHandler(service WalletService, guard AuthGuard, logger *zap.SugaredLogger) *Handler {
 	return &Handler{
 		walletService: service,
 		authGuard:     guard,
+		logger:        logger,
 	}
 }
 func (h *Handler) GetUserWalletAccounts(ctx *fiber.Ctx) error {
-	userID := ctx.Locals(common.USER_ID_CTX_KEY).(int)
-	if userID < 0 {
+	userID, exists := ctx.Locals(common.USER_ID_CTX_KEY).(int)
+	if !exists {
 		return ctx.SendStatus(fiber.StatusBadRequest)
 	}
 	userWalletAccounts, err := h.walletService.GetUserWalletAccounts(ctx.Context(), userID)

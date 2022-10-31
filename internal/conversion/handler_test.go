@@ -2,6 +2,7 @@ package conversion_test
 
 import (
 	"errors"
+	"github.com/eneskzlcn/currency-conversion-service/internal/common"
 	"github.com/eneskzlcn/currency-conversion-service/internal/common/testutil"
 	"github.com/eneskzlcn/currency-conversion-service/internal/conversion"
 	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/conversion"
@@ -16,17 +17,17 @@ import (
 
 func TestHandler_ConvertCurrencies(t *testing.T) {
 	handler, mockConversionService, _ := createHandlerWithMockConversionServiceAndAuthGuard(t)
-	app := fiber.New()
 	route := "/offer"
-	app.Post(route, handler.CurrencyConversionOffer)
-	t.Run("given invalid conversion offer request then it should return status bad request", func(t *testing.T) {
-		givenOfferRequest := "invalidRequest"
-		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
-		resp, err := app.Test(req)
-		assert.Nil(t, err)
-		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
-	})
-	t.Run("given conversion offer request but userID not in context then it should return status internal server error", func(t *testing.T) {
+	userID := 2
+	mockAuthMiddleware := func(handl fiber.Handler) fiber.Handler {
+		return func(ctx *fiber.Ctx) error {
+			ctx.Locals(common.USER_ID_CTX_KEY, userID)
+			return handl(ctx)
+		}
+	}
+	t.Run("given conversion offer request but userID not in context then it should return status bad request", func(t *testing.T) {
+		app := fiber.New()
+		app.Post(route, handler.CurrencyConversionOffer)
 		givenOfferRequest := conversion.CurrencyConversionOfferRequest{
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
@@ -40,7 +41,19 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
 	})
+	t.Run("given invalid conversion offer request then it should return status bad request", func(t *testing.T) {
+		app := fiber.New()
+		app.Post(route, mockAuthMiddleware(handler.CurrencyConversionOffer))
+		givenOfferRequest := "invalidRequest"
+		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
+		resp, err := app.Test(req)
+		assert.Nil(t, err)
+		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
+	})
+
 	t.Run("given conversion offer request but error returned from service then it should return status internal server error ", func(t *testing.T) {
+		app := fiber.New()
+		app.Post(route, mockAuthMiddleware(handler.CurrencyConversionOffer))
 		givenOfferRequest := conversion.CurrencyConversionOfferRequest{
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
@@ -49,7 +62,6 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 			ExpiresAt:    time.Now().Add(3 * time.Minute).Unix(),
 			Balance:      200,
 		}
-		userID := 3
 		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		req.Header.Set("userID", strconv.FormatInt(int64(userID), 10))
 		mockConversionService.EXPECT().ConvertCurrencies(gomock.Any(), userID, givenOfferRequest).
@@ -60,6 +72,8 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
 	})
 	t.Run("given conversion offer request then it should return status ok and ", func(t *testing.T) {
+		app := fiber.New()
+		app.Post(route, mockAuthMiddleware(handler.CurrencyConversionOffer))
 		givenOfferRequest := conversion.CurrencyConversionOfferRequest{
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
@@ -68,7 +82,6 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 			ExpiresAt:    time.Now().Add(3 * time.Minute).Unix(),
 			Balance:      200,
 		}
-		userID := 3
 		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		req.Header.Set("userID", strconv.FormatInt(int64(userID), 10))
 		mockConversionService.EXPECT().ConvertCurrencies(gomock.Any(), userID, givenOfferRequest).
@@ -91,6 +104,6 @@ func createHandlerWithMockConversionServiceAndAuthGuard(t *testing.T) (*conversi
 	ctrl := gomock.NewController(t)
 	mockConversionService := mocks.NewMockConversionService(ctrl)
 	mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
-	return conversion.NewHandler(mockConversionService, mockAuthGuard, zap.L().Sugar()),
+	return conversion.NewHandler(mockConversionService, mockAuthGuard, zap.S()),
 		mockConversionService, mockAuthGuard
 }

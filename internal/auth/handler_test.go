@@ -56,7 +56,7 @@ func TestRegisterRoutesSuccessfullyRegistersTheEndpointsToTheApp(t *testing.T) {
 	app := fiber.New()
 	ctrl := gomock.NewController(t)
 	mockAuthService := mocks.NewMockAuthService(ctrl)
-	handler := auth.NewHandler(mockAuthService, zap.L().Sugar())
+	handler := auth.NewHandler(mockAuthService, zap.S())
 	handler.RegisterRoutes(app)
 	resp, err := app.Test(httptest.NewRequest(fiber.MethodPost, "/auth/login", nil))
 	assert.Nil(t, err)
@@ -65,6 +65,6 @@ func TestRegisterRoutesSuccessfullyRegistersTheEndpointsToTheApp(t *testing.T) {
 func createHandlerAndMockAuthService(t *testing.T) (*auth.Handler, *mocks.MockAuthService) {
 	ctrl := gomock.NewController(t)
 	mockAuthService := mocks.NewMockAuthService(ctrl)
-	handler := auth.NewHandler(mockAuthService, zap.L().Sugar())
+	handler := auth.NewHandler(mockAuthService, zap.S())
 	return handler, mockAuthService
 }

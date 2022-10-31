@@ -61,7 +61,7 @@ func Test_ValidateToken(t *testing.T) {
 	}
 	ctrl := gomock.NewController(t)
 	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
-	authService := auth.NewService(config, mockAuthRepository, zap.L().Sugar())
+	authService := auth.NewService(config, mockAuthRepository, zap.S())
 
 	t.Run("given valid signed token then it should return nil when ValidateToken called", func(t *testing.T) {
 		givenUser := entity.User{
@@ -129,12 +129,12 @@ func newAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (*auth.Service, *m
 	}
 	ctrl := gomock.NewController(t)
 	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
-	return auth.NewService(givenConfig, mockAuthRepository, zap.L().Sugar()), mockAuthRepository
+	return auth.NewService(givenConfig, mockAuthRepository, zap.S()), mockAuthRepository
 }
 func newAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (*auth.Service, *mocks.MockAuthRepository) {
 	ctrl := gomock.NewController(t)
 	MockAuthRepository := mocks.NewMockAuthRepository(ctrl)
-	return auth.NewService(config, MockAuthRepository, zap.L().Sugar()), MockAuthRepository
+	return auth.NewService(config, MockAuthRepository, zap.S()), MockAuthRepository
 }
 func createMockValidToken(config config.Jwt, user entity.User) (string, error) {
 	tokenDuration := time.Duration(config.ATExpirationSeconds) * time.Second

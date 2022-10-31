@@ -8,25 +8,14 @@ import (
 	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/exchange"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"testing"
 	"time"
 )
 
-func TestNewService(t *testing.T) {
-	t.Run("given empty repository then it should return nil", func(t *testing.T) {
-		service := exchange.NewService(nil)
-		assert.Nil(t, service)
-	})
-	t.Run("given empty repository then it should return nil", func(t *testing.T) {
-		mockExchangeRepository := mocks.NewMockExchangeRepository(gomock.NewController(t))
-		service := exchange.NewService(mockExchangeRepository)
-		assert.NotNil(t, service)
-	})
-}
-
 func TestService_CreateExchangeRate(t *testing.T) {
 	mockExchangeRepository := mocks.NewMockExchangeRepository(gomock.NewController(t))
-	service := exchange.NewService(mockExchangeRepository)
+	service := exchange.NewService(mockExchangeRepository, zap.S())
 
 	t.Run("given not supported currency from then it should return not valid currency error", func(t *testing.T) {
 		givenRequest := exchange.ExchangeRateRequest{

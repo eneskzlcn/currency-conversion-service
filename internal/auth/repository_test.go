@@ -15,7 +15,7 @@ import (
 
 func TestRepository_GetUserByUsernameAndPassword(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := auth.NewRepository(db, zap.L().Sugar())
+	repository := auth.NewRepository(db, zap.S())
 	query := regexp.QuoteMeta(`
 		SELECT id, username, password, created_at, updated_at
 		FROM users WHERE username = $1 AND password = $2`)

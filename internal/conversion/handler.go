@@ -34,10 +34,8 @@ func (h *Handler) CurrencyConversionOffer(ctx *fiber.Ctx) error {
 		h.logger.Debug("Can not parse request body")
 		return ctx.SendStatus(fiber.StatusBadRequest)
 	}
-
 	success, err := h.conversionService.
 		ConvertCurrencies(ctx.Context(), userID, offerRequest)
-
 	if err != nil || !success {
 		h.logger.Debug("Convert currency operation ended up with error")
 		return ctx.SendStatus(fiber.StatusInternalServerError)

@@ -8,27 +8,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"testing"
 	"time"
 )
 
-func TestNewHandler(t *testing.T) {
-	t.Run("given currency service and auth guard then it should return new handler", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		mockExchangeService := mocks.NewMockExchangeService(ctrl)
-		mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
-		handler := exchange.NewHandler(mockExchangeService, mockAuthGuard)
-		assert.NotNil(t, handler)
-	})
-	t.Run("given empty service or auth guard then it should return nil", func(t *testing.T) {
-		handler := exchange.NewHandler(nil, nil)
-		assert.Nil(t, handler)
-		handler = exchange.NewHandler(nil, mocks.NewMockAuthGuard(gomock.NewController(t)))
-		assert.Nil(t, handler)
-		handler = exchange.NewHandler(mocks.NewMockExchangeService(gomock.NewController(t)), nil)
-		assert.Nil(t, handler)
-	})
-}
 func TestHandler_RegisterRoutes(t *testing.T) {
 	app := fiber.New()
 	handler, _, mockAuthGuard := createHandlerWithMockExchangeServiceAndAuthGuard(t)
@@ -88,5 +72,5 @@ func createHandlerWithMockExchangeServiceAndAuthGuard(t *testing.T) (*exchange.H
 	ctrl := gomock.NewController(t)
 	mockExchangeService := mocks.NewMockExchangeService(ctrl)
 	mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
-	return exchange.NewHandler(mockExchangeService, mockAuthGuard), mockExchangeService, mockAuthGuard
+	return exchange.NewHandler(mockExchangeService, mockAuthGuard, zap.S()), mockExchangeService, mockAuthGuard
 }

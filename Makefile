@@ -10,6 +10,9 @@ start:
 clean:
 	rm -rf bin && rm -rf internal/mocks && clear
 
+test:
+	go test ./...
+
 migrate-tables:
 	go build -o postgres_migrate  ./cmd/seed  && ./postgres_migrate -type=migrate && rm -rf postgres_migrate && clear
 

@@ -3,6 +3,7 @@ package exchange
 import (
 	"context"
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 type ExchangeService interface {
@@ -14,13 +15,11 @@ type AuthGuard interface {
 type Handler struct {
 	exchangeService ExchangeService
 	authGuard       AuthGuard
+	logger          *zap.SugaredLogger
 }
 
-func NewHandler(service ExchangeService, guard AuthGuard) *Handler {
-	if service == nil || guard == nil {
-		return nil
-	}
-	return &Handler{exchangeService: service, authGuard: guard}
+func NewHandler(service ExchangeService, guard AuthGuard, logger *zap.SugaredLogger) *Handler {
+	return &Handler{exchangeService: service, authGuard: guard, logger: logger}
 }
 func (h *Handler) GetExchangeRate(ctx *fiber.Ctx) error {
 	var request ExchangeRateRequest

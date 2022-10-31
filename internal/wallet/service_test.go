@@ -8,19 +8,9 @@ import (
 	"github.com/eneskzlcn/currency-conversion-service/internal/wallet"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"testing"
 )
-
-func TestNewService(t *testing.T) {
-	t.Run("given not valid arguments then it should return nil", func(t *testing.T) {
-		assert.Nil(t, wallet.NewService(nil))
-	})
-	t.Run("given valid arguments then it should return new Service", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		mockWalletRepo := mocks.NewMockWalletRepository(ctrl)
-		assert.NotNil(t, wallet.NewService(mockWalletRepo))
-	})
-}
 
 func TestService_GetUserWalletAccounts(t *testing.T) {
 	service, mockWalletRepo := createServiceWithMockWalletRepository(t)
@@ -124,5 +114,5 @@ func TestService_AdjustUserBalanceOnGivenCurrency(t *testing.T) {
 func createServiceWithMockWalletRepository(t *testing.T) (*wallet.Service, *mocks.MockWalletRepository) {
 	ctrl := gomock.NewController(t)
 	mockWalletRepo := mocks.NewMockWalletRepository(ctrl)
-	return wallet.NewService(mockWalletRepo), mockWalletRepo
+	return wallet.NewService(mockWalletRepo, zap.S()), mockWalletRepo
 }

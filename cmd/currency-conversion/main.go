@@ -40,21 +40,21 @@ func run() error {
 		return err
 	}
 
-	authRepository := auth.NewRepository(db)
-	authService := auth.NewService(configs.Jwt, authRepository)
-	authHandler := auth.NewHandler(authService)
+	authRepository := auth.NewRepository(db, logger)
+	authService := auth.NewService(configs.Jwt, authRepository, logger)
+	authHandler := auth.NewHandler(authService, logger)
 	authGuard := auth.NewGuard(authService, logger)
 
-	walletRepository := wallet.NewRepository(db)
-	walletService := wallet.NewService(walletRepository)
-	walletHandler := wallet.NewHandler(walletService, authGuard)
+	walletRepository := wallet.NewRepository(db, logger)
+	walletService := wallet.NewService(walletRepository, logger)
+	walletHandler := wallet.NewHandler(walletService, authGuard, logger)
 
-	exchangeRepository := exchange.NewRepository(db)
-	exchangeService := exchange.NewService(exchangeRepository)
-	exchangeHandler := exchange.NewHandler(exchangeService, authGuard)
+	exchangeRepository := exchange.NewRepository(db, logger)
+	exchangeService := exchange.NewService(exchangeRepository, logger)
+	exchangeHandler := exchange.NewHandler(exchangeService, authGuard, logger)
 
-	conversionService := conversion.NewService(walletService)
-	conversionHandler := conversion.NewHandler(conversionService, authGuard)
+	conversionService := conversion.NewService(walletService, logger)
+	conversionHandler := conversion.NewHandler(conversionService, authGuard, logger)
 
 	server := server.New([]server.Handler{
 		authHandler,

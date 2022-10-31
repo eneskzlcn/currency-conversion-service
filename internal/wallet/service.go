@@ -3,6 +3,7 @@ package wallet
 import (
 	"context"
 	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
+	"go.uber.org/zap"
 )
 
 type WalletRepository interface {
@@ -14,13 +15,11 @@ type WalletRepository interface {
 
 type Service struct {
 	walletRepository WalletRepository
+	logger           *zap.SugaredLogger
 }
 
-func NewService(repository WalletRepository) *Service {
-	if repository == nil {
-		return nil
-	}
-	return &Service{walletRepository: repository}
+func NewService(repository WalletRepository, logger *zap.SugaredLogger) *Service {
+	return &Service{walletRepository: repository, logger: logger}
 }
 
 func (s *Service) GetUserWalletAccounts(ctx context.Context, userID int) (UserWalletAccountsResponse, error) {

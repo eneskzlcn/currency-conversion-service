@@ -3,6 +3,7 @@ package auth_test
 import (
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/internal/auth"
+	"github.com/eneskzlcn/currency-conversion-service/internal/common/testutil"
 	"github.com/eneskzlcn/currency-conversion-service/internal/config"
 	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
 	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/auth"
@@ -10,30 +11,14 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
-func CreateFiberAppWithAMockProtectedEndpoint(guard *auth.Guard) *fiber.App {
-	app := fiber.New()
-	endpointToProtect := func(ctx *fiber.Ctx) error {
-		return ctx.Status(fiber.StatusOK).SendString("Hello")
-	}
-	app.Get("/test", guard.ProtectWithJWT(endpointToProtect))
-	return app
-}
-func makeTestRequestWithoutBodyToProtectedEndpoint(method string, route string, token string) *http.Request {
-	req := httptest.NewRequest(method, route, nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Token", token)
-	return req
-}
 func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMiddleware(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockAuthService := mocks.NewMockAuthService(ctrl)
-	guard := auth.NewGuard(mockAuthService, zap.L().Sugar())
-	app := CreateFiberAppWithAMockProtectedEndpoint(guard)
+	guard := auth.NewGuard(mockAuthService, zap.S())
+	app := createFiberAppWithAMockProtectedEndpoint(guard)
 
 	t.Run("given valid token then it should call next handler without status unauthorized", func(t *testing.T) {
 		givenConfig := config.Jwt{
@@ -50,7 +35,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 
 		mockAuthService.EXPECT().ValidateToken(gomock.Any(), token).Return(nil)
 		mockAuthService.EXPECT().ExtractUserIDFromToken(token).Return(givenUser.ID, nil)
-		req := makeTestRequestWithoutBodyToProtectedEndpoint(fiber.MethodGet, "/test", token)
+		req := testutil.MakeTestRequestWithoutBodyToProtectedEndpoint(fiber.MethodGet, "/test", token)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
@@ -59,9 +44,18 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 	t.Run("given invalid token then it should return status unauthorized", func(t *testing.T) {
 		invalidToken := "invalidToken"
 		mockAuthService.EXPECT().ValidateToken(gomock.Any(), invalidToken).Return(errors.New("authentication error"))
-		req := makeTestRequestWithoutBodyToProtectedEndpoint(fiber.MethodGet, "/test", invalidToken)
+		req := testutil.MakeTestRequestWithoutBodyToProtectedEndpoint(fiber.MethodGet, "/test", invalidToken)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)
 	})
+}
+
+func createFiberAppWithAMockProtectedEndpoint(guard *auth.Guard) *fiber.App {
+	app := fiber.New()
+	endpointToProtect := func(ctx *fiber.Ctx) error {
+		return ctx.Status(fiber.StatusOK).SendString("Hello")
+	}
+	app.Get("/test", guard.ProtectWithJWT(endpointToProtect))
+	return app
 }

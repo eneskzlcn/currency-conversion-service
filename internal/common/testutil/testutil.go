@@ -36,3 +36,9 @@ func AssertRouteRegistered(t *testing.T, app *fiber.App, method, route string) {
 	assert.Nil(t, err)
 	assert.NotEqual(t, fiber.StatusNotFound, resp.StatusCode)
 }
+func MakeTestRequestWithoutBodyToProtectedEndpoint(method string, route string, token string) *http.Request {
+	req := httptest.NewRequest(method, route, nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Token", token)
+	return req
+}

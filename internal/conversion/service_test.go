@@ -7,6 +7,7 @@ import (
 	mocks "github.com/eneskzlcn/currency-conversion-service/internal/mocks/conversion"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"testing"
 	"time"
 )
@@ -80,5 +81,5 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 func createServiceWithMockConversionRepository(t *testing.T) (*conversion.Service, *mocks.MockWalletService) {
 	ctrl := gomock.NewController(t)
 	mockWalletRepo := mocks.NewMockWalletService(ctrl)
-	return conversion.NewService(mockWalletRepo), mockWalletRepo
+	return conversion.NewService(mockWalletRepo, zap.S()), mockWalletRepo
 }

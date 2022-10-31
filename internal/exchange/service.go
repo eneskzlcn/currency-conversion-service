@@ -3,6 +3,7 @@ package exchange
 import (
 	"context"
 	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -12,13 +13,11 @@ type ExchangeRepository interface {
 }
 type Service struct {
 	exchangeRepository ExchangeRepository
+	logger             *zap.SugaredLogger
 }
 
-func NewService(repository ExchangeRepository) *Service {
-	if repository == nil {
-		return nil
-	}
-	return &Service{exchangeRepository: repository}
+func NewService(repository ExchangeRepository, logger *zap.SugaredLogger) *Service {
+	return &Service{exchangeRepository: repository, logger: logger}
 }
 func (s *Service) CreateExchangeRate(ctx context.Context, request ExchangeRateRequest) (ExchangeRateResponse, error) {
 	exists, err := s.exchangeRepository.IsCurrencyExists(ctx, request.FromCurrency)

@@ -7,25 +7,15 @@ import (
 	"github.com/eneskzlcn/currency-conversion-service/internal/exchange"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"regexp"
 	"testing"
 	"time"
 )
 
-func TestNewRepository(t *testing.T) {
-	t.Run("given empty database then it should return nil", func(t *testing.T) {
-		repository := exchange.NewRepository(nil)
-		assert.Nil(t, repository)
-	})
-	t.Run("given valid database then it should return new repository", func(t *testing.T) {
-		db, _ := postgres.NewMockPostgres()
-		repository := exchange.NewRepository(db)
-		assert.NotNil(t, repository)
-	})
-}
 func TestRepository_IsCurrencyExists(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := exchange.NewRepository(db)
+	repository := exchange.NewRepository(db, zap.S())
 	query := regexp.QuoteMeta(`SELECT EXISTS ( SELECT 1 FROM currencies c WHERE c.code = $1)`)
 	t.Run("given not existing currency code then it should return false", func(t *testing.T) {
 		givenCurrency := "asf"
@@ -48,7 +38,7 @@ func TestRepository_IsCurrencyExists(t *testing.T) {
 }
 func TestRepository_GetExchangeValuesForGivenCurrencies(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := exchange.NewRepository(db)
+	repository := exchange.NewRepository(db, zap.S())
 	query := regexp.QuoteMeta(`
 		SELECT currency_from, currency_to, exchange_rate, markup_rate, created_at, updated_at
 		FROM exchanges e WHERE currency_from = $1 AND currency_to = $2`)
