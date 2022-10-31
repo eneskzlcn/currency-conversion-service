@@ -12,7 +12,8 @@ name: Docker Image CI
 on:
   push:
     branches: [ master ]
-    pull_request: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
@@ -26,7 +27,9 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag eneskzlcn/currency-conversion-service:$(date + %s)
+        run: docker build . --file Dockerfile --tag eneskzlcn/currency-conversion-service:$(date +%s)
+
       - name: Docker Push
         run: docker push ${{ secrets.DOCKER_USER }}/currency-conversion-service
