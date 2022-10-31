@@ -42,7 +42,7 @@ func (s *Service) CreateExchangeRate(ctx context.Context, request ExchangeRateRe
 	}
 	exchangeRateOfferFeedWithMarkupRate := exchange.ExchangeRate + exchange.MarkupRate
 	createdAt := time.Now()
-	expiresAt := createdAt.Add(ExchangeRateExpirationMinutes * time.Minute)
+	expiresAt := createdAt.Add(ExchangeRateExpirationMinutes * time.Minute).Unix()
 	return ExchangeRateResponse{
 		FromCurrency: exchange.FromCurrency,
 		ToCurrency:   exchange.ToCurrency,

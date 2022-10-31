@@ -71,7 +71,7 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 			ToCurrency:   "USD",
 			ExchangeRate: 0.23,
 			CreatedAt:    time.Now(),
-			ExpiresAt:    time.Now().Add(exchange.ExchangeRateExpirationMinutes * time.Minute),
+			ExpiresAt:    time.Now().Add(exchange.ExchangeRateExpirationMinutes * time.Minute).Unix(),
 		}
 		mockExchangeService.EXPECT().CreateExchangeRate(gomock.Any(), givenRequest).
 			Return(expectedResponse, nil)

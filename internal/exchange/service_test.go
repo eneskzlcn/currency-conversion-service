@@ -89,7 +89,7 @@ func TestService_CreateExchangeRate(t *testing.T) {
 			ToCurrency:   givenRequest.ToCurrency,
 			ExchangeRate: givenExchange.ExchangeRate + givenExchange.MarkupRate,
 			CreatedAt:    givenExchange.CreatedAt,
-			ExpiresAt:    givenExchange.UpdatedAt,
+			ExpiresAt:    givenExchange.UpdatedAt.Unix(),
 		}
 		mockExchangeRepository.EXPECT().IsCurrencyExists(gomock.Any(), givenRequest.FromCurrency).
 			Return(true, nil)

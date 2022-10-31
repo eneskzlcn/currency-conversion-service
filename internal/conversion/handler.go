@@ -1,8 +1,13 @@
 package conversion
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"context"
+	"github.com/gofiber/fiber/v2"
+	"strconv"
+)
 
 type ConversionService interface {
+	CreateCurrencyConversion(ctx context.Context, userID int, request CurrencyConversionOfferRequest) (bool, error)
 }
 type AuthGuard interface {
 	ProtectWithJWT(handler fiber.Handler) fiber.Handler
@@ -24,7 +29,17 @@ func (h *Handler) CurrencyConversionOffer(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&offerRequest); err != nil {
 		return ctx.SendStatus(fiber.StatusBadRequest)
 	}
-	panic("implement me")
+	userID, err := strconv.ParseInt(ctx.Get("userID", "-1"), 10, 32)
+	if err != nil || userID < 0 {
+		return ctx.SendStatus(fiber.StatusBadRequest)
+	}
+	success, err := h.conversionService.
+		CreateCurrencyConversion(ctx.Context(), int(userID), offerRequest)
+
+	if err != nil || !success {
+		return ctx.SendStatus(fiber.StatusInternalServerError)
+	}
+	return ctx.SendStatus(fiber.StatusOK)
 }
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	appGroup := app.Group("/conversion")
