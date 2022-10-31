@@ -2,6 +2,7 @@ package wallet_test
 
 import (
 	"context"
+	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
 	"github.com/eneskzlcn/currency-conversion-service/internal/wallet"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
@@ -111,5 +112,35 @@ func TestRepository_GetUserBalanceOnGivenCurrency(t *testing.T) {
 		balance, err := repository.GetUserBalanceOnGivenCurrency(context.TODO(), userID, currency)
 		assert.NotNil(t, err)
 		assert.Equal(t, expectedBalance, balance)
+	})
+}
+func TestRepository_AdjustUserBalanceOnGivenCurrency(t *testing.T) {
+	db, sqlmock := postgres.NewMockPostgres()
+	repository := wallet.NewRepository(db)
+	query := regexp.QuoteMeta(`
+	UPDATE user_wallets 
+	SET balance = balance + $1 
+	WHERE user_id = $2 AND currency_code = $2`)
+
+	t.Run("given existing wallet with user_id and currency_code then it should return true", func(t *testing.T) {
+		userID := 2
+		currency := "TRY"
+		balance := float32(200)
+		sqlmock.ExpectQuery(query).WithArgs(balance, userID, currency).WillReturnRows(sqlmock.NewRows([]string{}))
+		success, err := repository.AdjustUserBalanceOnGivenCurrency(context.TODO(),
+			userID, currency, balance)
+		assert.Nil(t, sqlmock.ExpectationsWereMet())
+		assert.Nil(t, err)
+		assert.True(t, success)
+	})
+	t.Run("given non existing wallet with user_id and currency_code then  it should return false", func(t *testing.T) {
+		userID := -1
+		currency := "TsxY"
+		balance := float32(500)
+		sqlmock.ExpectQuery(query).WithArgs(balance, userID, currency).WillReturnError(errors.New("wallet not exist"))
+		success, err := repository.AdjustUserBalanceOnGivenCurrency(context.TODO(),
+			userID, currency, balance)
+		assert.NotNil(t, err)
+		assert.False(t, success)
 	})
 }

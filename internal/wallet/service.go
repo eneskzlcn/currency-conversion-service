@@ -22,6 +22,7 @@ func NewService(repository WalletRepository) *Service {
 	}
 	return &Service{walletRepository: repository}
 }
+
 func (s *Service) GetUserWalletAccounts(ctx context.Context, userID int) (UserWalletAccountsResponse, error) {
 	exists, err := s.walletRepository.IsUserWithUserIDExists(ctx, userID)
 	if err != nil {
@@ -37,9 +38,13 @@ func (s *Service) GetUserWalletAccounts(ctx context.Context, userID int) (UserWa
 	userWalletAccountsResponse := UserWalletAccountResponseFromUserWallets(userWalletsAccounts)
 	return userWalletAccountsResponse, nil
 }
-func (s *Service) GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error) {
+
+func (s *Service) GetUserBalanceOnGivenCurrency(ctx context.Context, userID int,
+	currency string) (float32, error) {
 	return s.walletRepository.GetUserBalanceOnGivenCurrency(ctx, userID, currency)
 }
-func (s *Service) AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error) {
-	panic("implement me")
+
+func (s *Service) AdjustUserBalanceOnGivenCurrency(ctx context.Context,
+	userID int, currency string, balance float32) (bool, error) {
+	return s.walletRepository.AdjustUserBalanceOnGivenCurrency(ctx, userID, currency, balance)
 }

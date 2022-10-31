@@ -65,5 +65,13 @@ func (r *Repository) GetUserBalanceOnGivenCurrency(ctx context.Context, userID i
 	return balance, nil
 }
 func (r *Repository) AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error) {
-	panic("implement me")
+	query := `
+	UPDATE user_wallets 
+	SET balance = balance + $1 
+	WHERE user_id = $2 AND currency_code = $2`
+	row := r.db.QueryRowContext(ctx, query, balance, userID, currency)
+	if err := row.Err(); err != nil {
+		return false, err
+	}
+	return true, nil
 }
