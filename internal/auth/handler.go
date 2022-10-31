@@ -1,16 +1,17 @@
 package auth
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
+)
 
 type Handler struct {
 	authService AuthService
+	logger      *zap.SugaredLogger
 }
 
-func NewHandler(service AuthService) *Handler {
-	if service == nil {
-		return nil
-	}
-	return &Handler{authService: service}
+func NewHandler(service AuthService, logger *zap.SugaredLogger) *Handler {
+	return &Handler{authService: service, logger: logger}
 }
 func (h *Handler) Login(ctx *fiber.Ctx) error {
 	var request LoginRequest

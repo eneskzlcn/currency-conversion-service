@@ -10,54 +10,13 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"testing"
 	"time"
 )
 
-func NewAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (*auth.Service, *mocks.MockAuthRepository) {
-	givenConfig := config.Jwt{
-		ATPrivateKey:        "private",
-		ATExpirationSeconds: 200,
-	}
-	ctrl := gomock.NewController(t)
-	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
-	return auth.NewService(givenConfig, mockAuthRepository), mockAuthRepository
-}
-func NewAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (*auth.Service, *mocks.MockAuthRepository) {
-	ctrl := gomock.NewController(t)
-	MockAuthRepository := mocks.NewMockAuthRepository(ctrl)
-	return auth.NewService(config, MockAuthRepository), MockAuthRepository
-}
-func CreateMockValidToken(config config.Jwt, user entity.User) (string, error) {
-	tokenDuration := time.Duration(config.ATExpirationSeconds) * time.Second
-	expirationTime := time.Now().Add(tokenDuration)
-	claims := auth.JWTClaim{
-		Username: user.Username,
-		UserID:   user.ID,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(config.ATPrivateKey))
-}
-func Test_NewService(t *testing.T) {
-	t.Run("test given config and user repository then it should return new Service when NewService called", func(t *testing.T) {
-		authService, _ := NewAuthServiceAndMockRepoWithDefaultConfig(t)
-		assert.NotNil(t, authService)
-	})
-	t.Run("test given config and nil user repository then it should not return new Service when NewService called", func(t *testing.T) {
-		givenConfig := config.Jwt{
-			ATPrivateKey:        "private",
-			ATExpirationSeconds: 200,
-		}
-		authService := auth.NewService(givenConfig, nil)
-		assert.Nil(t, authService)
-	})
-}
 func Test_Tokenize(t *testing.T) {
-	authService, mockAuthRepository := NewAuthServiceAndMockRepoWithDefaultConfig(t)
+	authService, mockAuthRepository := newAuthServiceAndMockRepoWithDefaultConfig(t)
 
 	t.Run("given existing user credentials then it should return access token when Tokenize called", func(t *testing.T) {
 		givenCredentials := auth.LoginRequest{
@@ -102,7 +61,7 @@ func Test_ValidateToken(t *testing.T) {
 	}
 	ctrl := gomock.NewController(t)
 	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
-	authService := auth.NewService(config, mockAuthRepository)
+	authService := auth.NewService(config, mockAuthRepository, zap.L().Sugar())
 
 	t.Run("given valid signed token then it should return nil when ValidateToken called", func(t *testing.T) {
 		givenUser := entity.User{
@@ -110,7 +69,7 @@ func Test_ValidateToken(t *testing.T) {
 			Username: "ex",
 			Password: "ex",
 		}
-		token, err := CreateMockValidToken(config, givenUser)
+		token, err := createMockValidToken(config, givenUser)
 		assert.Nil(t, err)
 		assert.NotEmpty(t, token)
 
@@ -129,7 +88,7 @@ func Test_ValidateToken(t *testing.T) {
 			Username: "ex",
 			Password: "ex",
 		}
-		token, err := CreateMockValidToken(config, givenUser)
+		token, err := createMockValidToken(config, givenUser)
 		assert.Nil(t, err)
 		assert.NotEmpty(t, token)
 		time.Sleep(2 * time.Second)
@@ -143,13 +102,13 @@ func TestService_ExtractUserIDFromToken(t *testing.T) {
 		ATPrivateKey:        "mypr",
 		ATExpirationSeconds: 20,
 	}
-	authService, _ := NewAuthServiceAndMockRepoWithGivenConfig(t, givenConfig)
+	authService, _ := newAuthServiceAndMockRepoWithGivenConfig(t, givenConfig)
 	t.Run("given valid token then it should extract the user id from token when ExtractUserIDFromToken called", func(t *testing.T) {
 		givenUser := entity.User{
 			ID:       2,
 			Username: "asd",
 		}
-		token, err := CreateMockValidToken(givenConfig, givenUser)
+		token, err := createMockValidToken(givenConfig, givenUser)
 		assert.Nil(t, err)
 
 		userID, err := authService.ExtractUserIDFromToken(token)
@@ -161,4 +120,33 @@ func TestService_ExtractUserIDFromToken(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, -1, userID)
 	})
+}
+
+func newAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (*auth.Service, *mocks.MockAuthRepository) {
+	givenConfig := config.Jwt{
+		ATPrivateKey:        "private",
+		ATExpirationSeconds: 200,
+	}
+	ctrl := gomock.NewController(t)
+	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
+	return auth.NewService(givenConfig, mockAuthRepository, zap.L().Sugar()), mockAuthRepository
+}
+func newAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (*auth.Service, *mocks.MockAuthRepository) {
+	ctrl := gomock.NewController(t)
+	MockAuthRepository := mocks.NewMockAuthRepository(ctrl)
+	return auth.NewService(config, MockAuthRepository, zap.L().Sugar()), MockAuthRepository
+}
+func createMockValidToken(config config.Jwt, user entity.User) (string, error) {
+	tokenDuration := time.Duration(config.ATExpirationSeconds) * time.Second
+	expirationTime := time.Now().Add(tokenDuration)
+	claims := auth.JWTClaim{
+		Username: user.Username,
+		UserID:   user.ID,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(config.ATPrivateKey))
 }

@@ -11,18 +11,6 @@ import (
 	"time"
 )
 
-func TestNewService(t *testing.T) {
-	t.Run("given empty repository then it should return nil", func(t *testing.T) {
-		service := conversion.NewService(nil)
-		assert.Nil(t, service)
-	})
-	t.Run("given valid arguments then it should return service", func(t *testing.T) {
-		mockWalletRepo := mocks.NewMockWalletService(gomock.NewController(t))
-		service := conversion.NewService(mockWalletRepo)
-		assert.NotNil(t, service)
-	})
-}
-
 func TestService_CreateCurrencyConversion(t *testing.T) {
 	service, mockWalletService := createServiceWithMockConversionRepository(t)
 	t.Run("given expired exchange offer request then it should return false with error", func(t *testing.T) {

@@ -4,17 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
+	"go.uber.org/zap"
 )
 
 type Repository struct {
-	db *sql.DB
+	db     *sql.DB
+	logger *zap.SugaredLogger
 }
 
-func NewRepository(db *sql.DB) *Repository {
-	if db == nil {
-		return nil
-	}
-	return &Repository{db: db}
+func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *Repository {
+	return &Repository{db: db, logger: logger}
 }
 func (r *Repository) GetUserByUsernameAndPassword(ctx context.Context, username string, password string) (entity.User, error) {
 	query := `

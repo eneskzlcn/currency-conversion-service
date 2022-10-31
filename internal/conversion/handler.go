@@ -2,8 +2,9 @@ package conversion
 
 import (
 	"context"
+	"github.com/eneskzlcn/currency-conversion-service/internal/common"
 	"github.com/gofiber/fiber/v2"
-	"strconv"
+	"go.uber.org/zap"
 )
 
 type ConversionService interface {
@@ -16,27 +17,29 @@ type AuthGuard interface {
 type Handler struct {
 	conversionService ConversionService
 	authGuard         AuthGuard
+	logger            *zap.SugaredLogger
 }
 
-func NewHandler(service ConversionService, guard AuthGuard) *Handler {
-	if service == nil || guard == nil {
-		return nil
-	}
-	return &Handler{conversionService: service, authGuard: guard}
+func NewHandler(service ConversionService, guard AuthGuard, logger *zap.SugaredLogger) *Handler {
+	return &Handler{conversionService: service, authGuard: guard, logger: logger}
 }
 func (h *Handler) CurrencyConversionOffer(ctx *fiber.Ctx) error {
+	userID, exists := ctx.Locals(common.USER_ID_CTX_KEY).(int)
+	h.logger.Infof("Currency Conversion Offer Request Arrived. User ID: %d", userID)
+	if !exists {
+		return ctx.SendStatus(fiber.StatusBadRequest)
+	}
 	var offerRequest CurrencyConversionOfferRequest
 	if err := ctx.BodyParser(&offerRequest); err != nil {
+		h.logger.Debug("Can not parse request body")
 		return ctx.SendStatus(fiber.StatusBadRequest)
 	}
-	userID, err := strconv.ParseInt(ctx.Get("userID", "-1"), 10, 32)
-	if err != nil || userID < 0 {
-		return ctx.SendStatus(fiber.StatusBadRequest)
-	}
+
 	success, err := h.conversionService.
-		ConvertCurrencies(ctx.Context(), int(userID), offerRequest)
+		ConvertCurrencies(ctx.Context(), userID, offerRequest)
 
 	if err != nil || !success {
+		h.logger.Debug("Convert currency operation ended up with error")
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}
 	return ctx.SendStatus(fiber.StatusOK)

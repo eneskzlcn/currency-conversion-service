@@ -6,6 +6,7 @@ import (
 	"github.com/eneskzlcn/currency-conversion-service/internal/config"
 	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
 	"github.com/golang-jwt/jwt"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -15,13 +16,14 @@ type AuthRepository interface {
 type Service struct {
 	config         config.Jwt
 	authRepository AuthRepository
+	logger         *zap.SugaredLogger
 }
 
-func NewService(config config.Jwt, repository AuthRepository) *Service {
+func NewService(config config.Jwt, repository AuthRepository, logger *zap.SugaredLogger) *Service {
 	if repository == nil {
 		return nil
 	}
-	return &Service{config: config, authRepository: repository}
+	return &Service{config: config, authRepository: repository, logger: logger}
 }
 
 func (s *Service) Tokenize(ctx context.Context, credentials LoginRequest) (TokenResponse, error) {

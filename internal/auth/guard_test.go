@@ -9,23 +9,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func Test_NewGuard(t *testing.T) {
-	t.Run("given valid auth service then it should return Guard when NewGuard called", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		mockAuthService := mocks.NewMockAuthService(ctrl)
-		authGuard := auth.NewGuard(mockAuthService)
-		assert.NotNil(t, authGuard)
-	})
-	t.Run("given nil auth service then it should return nil when NewGuard called", func(t *testing.T) {
-		authGuard := auth.NewGuard(nil)
-		assert.Nil(t, authGuard)
-	})
-}
 func CreateFiberAppWithAMockProtectedEndpoint(guard *auth.Guard) *fiber.App {
 	app := fiber.New()
 	endpointToProtect := func(ctx *fiber.Ctx) error {
@@ -43,7 +32,7 @@ func makeTestRequestWithoutBodyToProtectedEndpoint(method string, route string, 
 func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMiddleware(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockAuthService := mocks.NewMockAuthService(ctrl)
-	guard := auth.NewGuard(mockAuthService)
+	guard := auth.NewGuard(mockAuthService, zap.L().Sugar())
 	app := CreateFiberAppWithAMockProtectedEndpoint(guard)
 
 	t.Run("given valid token then it should call next handler without status unauthorized", func(t *testing.T) {
@@ -56,7 +45,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 			Username: "user",
 			Password: "user",
 		}
-		token, err := CreateMockValidToken(givenConfig, givenUser)
+		token, err := createMockValidToken(givenConfig, givenUser)
 		assert.Nil(t, err)
 
 		mockAuthService.EXPECT().ValidateToken(gomock.Any(), token).Return(nil)

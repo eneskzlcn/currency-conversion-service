@@ -8,22 +8,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"net/http/httptest"
 	"testing"
 )
 
-func TestNewHandler(t *testing.T) {
-	t.Run("given auth service then it should return new Handler when NewHandler called", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		mockAuthService := mocks.NewMockAuthService(ctrl)
-		handler := auth.NewHandler(mockAuthService)
-		assert.NotNil(t, handler)
-	})
-	t.Run("given nil auth service then it should return nil when NewHandler called", func(t *testing.T) {
-		handler := auth.NewHandler(nil)
-		assert.Nil(t, handler)
-	})
-}
 func TestHandler_Login(t *testing.T) {
 	handler, mockAuthService := createHandlerAndMockAuthService(t)
 	app := fiber.New()
@@ -67,7 +56,7 @@ func TestRegisterRoutesSuccessfullyRegistersTheEndpointsToTheApp(t *testing.T) {
 	app := fiber.New()
 	ctrl := gomock.NewController(t)
 	mockAuthService := mocks.NewMockAuthService(ctrl)
-	handler := auth.NewHandler(mockAuthService)
+	handler := auth.NewHandler(mockAuthService, zap.L().Sugar())
 	handler.RegisterRoutes(app)
 	resp, err := app.Test(httptest.NewRequest(fiber.MethodPost, "/auth/login", nil))
 	assert.Nil(t, err)
@@ -76,6 +65,6 @@ func TestRegisterRoutesSuccessfullyRegistersTheEndpointsToTheApp(t *testing.T) {
 func createHandlerAndMockAuthService(t *testing.T) (*auth.Handler, *mocks.MockAuthService) {
 	ctrl := gomock.NewController(t)
 	mockAuthService := mocks.NewMockAuthService(ctrl)
-	handler := auth.NewHandler(mockAuthService)
+	handler := auth.NewHandler(mockAuthService, zap.L().Sugar())
 	return handler, mockAuthService
 }

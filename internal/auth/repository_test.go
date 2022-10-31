@@ -7,25 +7,15 @@ import (
 	"github.com/eneskzlcn/currency-conversion-service/internal/entity"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"regexp"
 	"testing"
 	"time"
 )
 
-func TestNewRepository(t *testing.T) {
-	t.Run("given valid sql db then it should return repository", func(t *testing.T) {
-		db, _ := postgres.NewMockPostgres()
-		repository := auth.NewRepository(db)
-		assert.NotNil(t, repository)
-	})
-	t.Run("given empty sql db then it should return nil", func(t *testing.T) {
-		repository := auth.NewRepository(nil)
-		assert.Nil(t, repository)
-	})
-}
 func TestRepository_GetUserByUsernameAndPassword(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := auth.NewRepository(db)
+	repository := auth.NewRepository(db, zap.L().Sugar())
 	query := regexp.QuoteMeta(`
 		SELECT id, username, password, created_at, updated_at
 		FROM users WHERE username = $1 AND password = $2`)

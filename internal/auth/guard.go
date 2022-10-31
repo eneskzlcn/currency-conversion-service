@@ -2,8 +2,9 @@ package auth
 
 import (
 	"context"
+	"github.com/eneskzlcn/currency-conversion-service/internal/common"
 	"github.com/gofiber/fiber/v2"
-	"strconv"
+	"go.uber.org/zap"
 )
 
 type AuthService interface {
@@ -11,15 +12,14 @@ type AuthService interface {
 	ExtractUserIDFromToken(tokenString string) (int, error)
 	Tokenize(ctx context.Context, request LoginRequest) (TokenResponse, error)
 }
+
 type Guard struct {
 	authService AuthService
+	logger      *zap.SugaredLogger
 }
 
-func NewGuard(service AuthService) *Guard {
-	if service == nil {
-		return nil
-	}
-	return &Guard{authService: service}
+func NewGuard(service AuthService, logger *zap.SugaredLogger) *Guard {
+	return &Guard{authService: service, logger: logger}
 }
 func (g *Guard) ProtectWithJWT(handler fiber.Handler) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
@@ -32,7 +32,8 @@ func (g *Guard) ProtectWithJWT(handler fiber.Handler) fiber.Handler {
 			return ctx.SendStatus(fiber.StatusUnauthorized)
 		}
 		userID, _ := g.authService.ExtractUserIDFromToken(token)
-		ctx.Set("userID", strconv.FormatInt(int64(userID), 10))
+		g.logger.Debugf("Authorized user with ID:%d", userID)
+		ctx.Locals(common.USER_ID_CTX_KEY, userID)
 		return handler(ctx)
 	}
 }

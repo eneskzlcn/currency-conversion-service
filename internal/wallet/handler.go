@@ -2,8 +2,8 @@ package wallet
 
 import (
 	"context"
+	"github.com/eneskzlcn/currency-conversion-service/internal/common"
 	"github.com/gofiber/fiber/v2"
-	"strconv"
 )
 
 type WalletService interface {
@@ -27,11 +27,11 @@ func NewHandler(service WalletService, guard AuthGuard) *Handler {
 	}
 }
 func (h *Handler) GetUserWalletAccounts(ctx *fiber.Ctx) error {
-	userID, err := strconv.ParseInt(ctx.Get("userID", "-1"), 10, 32)
-	if err != nil || userID < 0 {
+	userID := ctx.Locals(common.USER_ID_CTX_KEY).(int)
+	if userID < 0 {
 		return ctx.SendStatus(fiber.StatusBadRequest)
 	}
-	userWalletAccounts, err := h.walletService.GetUserWalletAccounts(ctx.Context(), int(userID))
+	userWalletAccounts, err := h.walletService.GetUserWalletAccounts(ctx.Context(), userID)
 	if err != nil {
 		return ctx.SendStatus(fiber.StatusInternalServerError)
 	}

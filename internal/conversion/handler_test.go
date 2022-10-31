@@ -8,29 +8,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"strconv"
 	"testing"
 	"time"
 )
 
-func TestNewHandler(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockConversionService := mocks.NewMockConversionService(ctrl)
-	mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
-
-	t.Run("given empty service or auth guard then it should return nil", func(t *testing.T) {
-		handler := conversion.NewHandler(nil, nil)
-		assert.Nil(t, handler)
-		handler = conversion.NewHandler(mockConversionService, nil)
-		assert.Nil(t, handler)
-		handler = conversion.NewHandler(nil, mockAuthGuard)
-		assert.Nil(t, handler)
-	})
-	t.Run("given conversion service then it should return handler", func(t *testing.T) {
-		handler := conversion.NewHandler(mockConversionService, mockAuthGuard)
-		assert.NotNil(t, handler)
-	})
-}
 func TestHandler_ConvertCurrencies(t *testing.T) {
 	handler, mockConversionService, _ := createHandlerWithMockConversionServiceAndAuthGuard(t)
 	app := fiber.New()
@@ -108,6 +91,6 @@ func createHandlerWithMockConversionServiceAndAuthGuard(t *testing.T) (*conversi
 	ctrl := gomock.NewController(t)
 	mockConversionService := mocks.NewMockConversionService(ctrl)
 	mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
-	return conversion.NewHandler(mockConversionService, mockAuthGuard),
+	return conversion.NewHandler(mockConversionService, mockAuthGuard, zap.L().Sugar()),
 		mockConversionService, mockAuthGuard
 }

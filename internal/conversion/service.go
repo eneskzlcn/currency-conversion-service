@@ -3,6 +3,7 @@ package conversion
 import (
 	"context"
 	"errors"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -12,13 +13,14 @@ type WalletService interface {
 }
 type Service struct {
 	walletService WalletService
+	logger        *zap.SugaredLogger
 }
 
-func NewService(walletService WalletService) *Service {
+func NewService(walletService WalletService, logger *zap.SugaredLogger) *Service {
 	if walletService == nil {
 		return nil
 	}
-	return &Service{walletService: walletService}
+	return &Service{walletService: walletService, logger: logger}
 }
 func (s *Service) ConvertCurrencies(ctx context.Context, userID int, request CurrencyConversionOfferRequest) (bool, error) {
 	if !s.isValidConversionOfferExchangeRate(request.ExpiresAt) {
