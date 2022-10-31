@@ -10,7 +10,7 @@ start:
 clean:
 	rm -rf bin && rm -rf app/mocks && clear
 
-test:
+unit-tests:
 	go test ./...
 
 migrate-tables:
