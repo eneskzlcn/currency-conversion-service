@@ -80,7 +80,7 @@ func TestRepository_GetUserWalletAccounts(t *testing.T) {
 		sqlmock.ExpectQuery(query).WithArgs(userID).WillReturnRows(expectedRows)
 		userWallets, err := repository.GetUserWalletAccounts(context.TODO(), userID)
 		assert.Nil(t, err)
-		assert.Empty(t, userWallets)
+		assert.Equal(t, userWallets, expectedUserWallets)
 	})
 }
 func TestRepository_GetUserBalanceOnGivenCurrency(t *testing.T) {

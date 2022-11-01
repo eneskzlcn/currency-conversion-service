@@ -18,7 +18,7 @@ import (
 func TestRepository_IsCurrencyExists(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
 	repository := exchange.NewRepository(db, zap.S())
-	query := regexp.QuoteMeta(`SELECT EXISTS ( SELECT 1 FROM currencies c WHERE c.code = $1)`)
+	query := regexp.QuoteMeta(`SELECT EXISTS ( SELECT 1 FROM currencies WHERE code = $1)`)
 	t.Run("given not existing currency code then it should return false", func(t *testing.T) {
 		givenCurrency := "asf"
 		sqlmock.ExpectQuery(query).WithArgs(givenCurrency).

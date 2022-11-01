@@ -18,12 +18,9 @@ func main() {
 	}
 }
 func run() error {
-	conf, err := config.LoadConfig(".dev/", "local", "yaml")
-	if err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-	postgresDB, err := postgres.New(conf.Db)
+	appConfig := config.New()
+
+	postgresDB, err := postgres.New(appConfig.Db)
 
 	if err != nil {
 		fmt.Println("error when initializing database", err.Error())
@@ -45,12 +42,10 @@ func run() error {
 		if err = seed.MigrateTables(context.Background(), postgresDB); err != nil {
 			return fmt.Errorf("migration error %s", err.Error())
 		}
-		break
 	case "drop":
 		if err = seed.DropTables(context.Background(), postgresDB); err != nil {
 			return fmt.Errorf("drop error %s", err.Error())
 		}
-		break
 	default:
 		return errors.New("not valid flag type for action")
 	}

@@ -59,7 +59,7 @@ func Test_Tokenize(t *testing.T) {
 func Test_ValidateToken(t *testing.T) {
 	config := config.Jwt{
 		ATPrivateKey:        "privateKey",
-		ATExpirationSeconds: 1,
+		ATExpirationMinutes: 1,
 	}
 	ctrl := gomock.NewController(t)
 	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
@@ -102,7 +102,7 @@ func Test_ValidateToken(t *testing.T) {
 func TestService_ExtractUserIDFromToken(t *testing.T) {
 	givenConfig := config.Jwt{
 		ATPrivateKey:        "mypr",
-		ATExpirationSeconds: 20,
+		ATExpirationMinutes: 20,
 	}
 	authService, _ := newAuthServiceAndMockRepoWithGivenConfig(t, givenConfig)
 	t.Run("given valid token then it should extract the user id from token when ExtractUserIDFromToken called", func(t *testing.T) {
@@ -127,7 +127,7 @@ func TestService_ExtractUserIDFromToken(t *testing.T) {
 func newAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (*auth.Service, *mocks.MockAuthRepository) {
 	givenConfig := config.Jwt{
 		ATPrivateKey:        "private",
-		ATExpirationSeconds: 200,
+		ATExpirationMinutes: 200,
 	}
 	ctrl := gomock.NewController(t)
 	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
@@ -139,7 +139,7 @@ func newAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (
 	return auth.NewService(config, MockAuthRepository, zap.S()), MockAuthRepository
 }
 func createMockValidToken(config config.Jwt, user entity.User) (string, error) {
-	tokenDuration := time.Duration(config.ATExpirationSeconds) * time.Second
+	tokenDuration := time.Duration(config.ATExpirationMinutes) * time.Second
 	expirationTime := time.Now().Add(tokenDuration)
 	claims := auth.JWTClaim{
 		Username: user.Username,

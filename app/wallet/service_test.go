@@ -23,7 +23,7 @@ func TestService_GetUserWalletAccounts(t *testing.T) {
 		userWalletAccountsResp, err := service.GetUserWalletAccounts(context.TODO(), userID)
 		assert.Empty(t, userWalletAccountsResp)
 		assert.NotNil(t, err)
-		assert.True(t, errors.Is(err, wallet.UserWithUserIDNotExistsErr))
+		assert.Equal(t, err.Error(), wallet.UserWithUserIDNotExists)
 	})
 	t.Run("given existing user id then it should return users wallet accounts", func(t *testing.T) {
 		userID := 2

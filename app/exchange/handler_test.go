@@ -39,7 +39,7 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
 		}
-		mockExchangeService.EXPECT().CreateExchangeRate(gomock.Any(), givenRequest).
+		mockExchangeService.EXPECT().PrepareExchangeRateOffer(gomock.Any(), givenRequest).
 			Return(exchange.ExchangeRateResponse{}, errors.New(""))
 
 		req := testutil.MakeTestRequestWithBody(fiber.MethodGet, "/rate", givenRequest)
@@ -59,7 +59,7 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 			CreatedAt:    time.Now(),
 			ExpiresAt:    time.Now().Add(exchange.ExchangeRateExpirationMinutes * time.Minute).Unix(),
 		}
-		mockExchangeService.EXPECT().CreateExchangeRate(gomock.Any(), givenRequest).
+		mockExchangeService.EXPECT().PrepareExchangeRateOffer(gomock.Any(), givenRequest).
 			Return(expectedResponse, nil)
 
 		req := testutil.MakeTestRequestWithBody(fiber.MethodGet, "/rate", givenRequest)

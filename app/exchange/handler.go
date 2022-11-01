@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"context"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/httperror"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
@@ -27,22 +28,23 @@ func NewHandler(service ExchangeService, guard AuthGuard, logger *zap.SugaredLog
 //@Description creates an exchange rate offer for given currencies
 //@Param exchangeRateRequest body ExchangeRateRequest true "body params"
 //@Param accessToken header string true "header params"
+// @Tags Exchange
 //@Accept  json
 //@Produce  json
 //@Success 200 {object} ExchangeRateResponse
-//@Failure 400
+//@Failure 400 {object} httperror.HttpError
 //@Failure 401 {string} string "Unauthorized"
 //@Failure 404
-//@Failure 500
+//@Failure 500 {object} httperror.HttpError
 //@Router /exchange/rate [get]
 func (h *Handler) GetExchangeRate(ctx *fiber.Ctx) error {
 	var request ExchangeRateRequest
 	if err := ctx.BodyParser(&request); err != nil {
-		return ctx.SendStatus(fiber.StatusBadRequest)
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperror.NewBadRequestError(err.Error()))
 	}
 	exchangeRate, err := h.exchangeService.PrepareExchangeRateOffer(ctx.Context(), request)
 	if err != nil {
-		return ctx.SendStatus(fiber.StatusInternalServerError)
+		return ctx.Status(fiber.StatusInternalServerError).JSON(httperror.NewInternalServerError(err.Error()))
 	}
 	return ctx.Status(fiber.StatusCreated).JSON(exchangeRate)
 }

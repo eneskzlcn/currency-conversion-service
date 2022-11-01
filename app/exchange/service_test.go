@@ -27,7 +27,7 @@ func TestService_CreateExchangeRate(t *testing.T) {
 		mockExchangeRepository.EXPECT().IsCurrencyExists(gomock.Any(), givenRequest.FromCurrency).
 			Return(false, nil)
 		exchangeDateResp, err := service.PrepareExchangeRateOffer(context.Background(), givenRequest)
-		assert.True(t, errors.Is(err, exchange.NotValidCurrencyErr))
+		assert.Equal(t, err.Error(), exchange.NotValidCurrency)
 		assert.Empty(t, exchangeDateResp)
 	})
 	t.Run("given not supported currency to then it should return not valid currency error", func(t *testing.T) {
@@ -40,7 +40,7 @@ func TestService_CreateExchangeRate(t *testing.T) {
 		mockExchangeRepository.EXPECT().IsCurrencyExists(gomock.Any(), givenRequest.ToCurrency).
 			Return(false, nil)
 		exchangeDateResp, err := service.PrepareExchangeRateOffer(context.Background(), givenRequest)
-		assert.True(t, errors.Is(err, exchange.NotValidCurrencyErr))
+		assert.Equal(t, err.Error(), exchange.NotValidCurrency)
 		assert.Empty(t, exchangeDateResp)
 	})
 	t.Run("given supported currency values but exchange values can not be taken then it should return error", func(t *testing.T) {

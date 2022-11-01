@@ -45,7 +45,7 @@ func (s *Server) AddRoutes() {
 // HealthCheck godoc
 // @Summary Show the status of server.
 // @Description Get the status of server.
-// @Tags Health Check
+// @Tags Health
 // @Accept */*
 // @Success 200
 // @Failure 404
@@ -72,7 +72,7 @@ func (s *Server) healthCheck(ctx *fiber.Ctx) error {
 func (s *Server) Start() error {
 	address := fmt.Sprintf(":%s", s.config.Port)
 	shutDownChan := make(chan os.Signal, 1)
-	signal.Notify(shutDownChan, os.Interrupt, syscall.SIGTERM, os.Kill)
+	signal.Notify(shutDownChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-shutDownChan
 		if err := s.app.Shutdown(); err != nil {

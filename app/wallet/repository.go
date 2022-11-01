@@ -32,10 +32,10 @@ func (r *Repository) GetUserWalletAccounts(ctx context.Context, userID int) ([]e
 		FROM user_wallets uw 
 		WHERE uw.user_id = $1`
 	rows, err := r.db.QueryContext(ctx, query, userID)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	var userWallets []entity.UserWallet
 	for rows.Next() {
 		var wallet entity.UserWallet

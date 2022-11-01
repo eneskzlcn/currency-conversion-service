@@ -46,6 +46,13 @@ definitions:
       to_currency:
         type: string
     type: object
+  httperror.HttpError:
+    properties:
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
   wallet.UserWalletAccount:
     properties:
       balance:
@@ -89,6 +96,8 @@ paths:
         "500":
           description: Internal Server Error
       summary: Authenticate user
+      tags:
+      - Authentication
   /conversion/offer:
     post:
       consumes:
@@ -111,8 +120,12 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            type: string
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/httperror.HttpError'
         "401":
           description: Unauthorized
           schema:
@@ -121,7 +134,11 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperror.HttpError'
       summary: Accepts currency conversion offer
+      tags:
+      - Conversion
   /exchange/rate:
     get:
       consumes:
@@ -148,6 +165,8 @@ paths:
             $ref: '#/definitions/exchange.ExchangeRateResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/httperror.HttpError'
         "401":
           description: Unauthorized
           schema:
@@ -156,7 +175,11 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperror.HttpError'
       summary: Create an exchange rate offer
+      tags:
+      - Exchange
   /health:
     get:
       consumes:
@@ -169,7 +192,7 @@ paths:
           description: Not Found
       summary: Show the status of server.
       tags:
-      - Health Check
+      - Health
   /wallets:
     get:
       consumes:
@@ -190,6 +213,8 @@ paths:
             $ref: '#/definitions/wallet.UserWalletAccountsResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/httperror.HttpError'
         "401":
           description: Unauthorized
           schema:
@@ -198,5 +223,9 @@ paths:
           description: Not Found
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/httperror.HttpError'
       summary: Shows user wallet accounts
+      tags:
+      - Wallet
 swagger: "2.0"

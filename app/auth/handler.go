@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/eneskzlcn/currency-conversion-service/app/common/httperror"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
@@ -18,6 +19,7 @@ func NewHandler(service AuthService, logger *zap.SugaredLogger) *Handler {
 // @Summary Authenticate user
 // @Description authenticates given user by giving an access token.
 // @Param loginCredentials body LoginRequest true "body params"
+// @Tags Authentication
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} TokenResponse
@@ -28,7 +30,7 @@ func NewHandler(service AuthService, logger *zap.SugaredLogger) *Handler {
 func (h *Handler) Login(ctx *fiber.Ctx) error {
 	var request LoginRequest
 	if err := ctx.BodyParser(&request); err != nil {
-		return ctx.SendStatus(fiber.StatusBadRequest)
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperror.NewBadRequestError(err.Error()))
 	}
 	tokenResponse, err := h.authService.Tokenize(ctx.Context(), request)
 	if err != nil {

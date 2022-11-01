@@ -13,6 +13,9 @@
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Authentication"
+                ],
                 "summary": "Authenticate user",
                 "parameters": [
                     {
@@ -53,6 +56,9 @@
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Conversion"
+                ],
                 "summary": "Accepts currency conversion offer",
                 "parameters": [
                     {
@@ -74,10 +80,16 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -89,7 +101,10 @@
                         "description": "Not Found"
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     }
                 }
             }
@@ -102,6 +117,9 @@
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Exchange"
                 ],
                 "summary": "Create an exchange rate offer",
                 "parameters": [
@@ -130,7 +148,10 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -142,7 +163,10 @@
                         "description": "Not Found"
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     }
                 }
             }
@@ -154,7 +178,7 @@
                     "*/*"
                 ],
                 "tags": [
-                    "Health Check"
+                    "Health"
                 ],
                 "summary": "Show the status of server.",
                 "responses": {
@@ -176,6 +200,9 @@
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Wallet"
+                ],
                 "summary": "Shows user wallet accounts",
                 "parameters": [
                     {
@@ -194,7 +221,10 @@
                         }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -206,7 +236,10 @@
                         "description": "Not Found"
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     }
                 }
             }
@@ -283,6 +316,17 @@
                 },
                 "to_currency": {
                     "type": "string"
+                }
+            }
+        },
+        "httperror.HttpError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
                 }
             }
         },

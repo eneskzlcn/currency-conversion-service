@@ -21,27 +21,20 @@ func main() {
 }
 
 func run() error {
-	env, exists := os.LookupEnv("DEPLOY_ENV")
-	if !exists {
-		env = "local"
-	}
-	configs, err := config.LoadConfig(".dev", env, "yaml")
+	appConfig := config.New()
+	appConfig.Print()
+	logger, err := logger.NewZapLoggerForEnv(appConfig.AppEnv, 0)
 	if err != nil {
 		return err
 	}
 
-	logger, err := logger.NewZapLoggerForEnv(env, 0)
-	if err != nil {
-		return err
-	}
-
-	db, err := postgres.New(configs.Db)
+	db, err := postgres.New(appConfig.Db)
 	if err != nil {
 		return err
 	}
 
 	authRepository := auth.NewRepository(db, logger)
-	authService := auth.NewService(configs.Jwt, authRepository, logger)
+	authService := auth.NewService(appConfig.Jwt, authRepository, logger)
 	authHandler := auth.NewHandler(authService, logger)
 	authGuard := auth.NewGuard(authService, logger)
 
@@ -61,8 +54,7 @@ func run() error {
 		walletHandler,
 		exchangeHandler,
 		conversionHandler,
-	}, configs.Server, logger)
+	}, appConfig.Server, logger)
 
-	logger.Sync()
 	return server.Start()
 }

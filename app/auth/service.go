@@ -32,7 +32,7 @@ func (s *Service) Tokenize(ctx context.Context, credentials LoginRequest) (Token
 		return TokenResponse{}, err
 	}
 
-	tokenDuration := time.Duration(s.config.ATExpirationSeconds) * time.Second
+	tokenDuration := time.Duration(s.config.ATExpirationMinutes) * time.Minute
 	expirationTime := time.Now().Add(tokenDuration)
 
 	claims := JWTClaim{

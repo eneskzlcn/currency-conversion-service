@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"context"
+	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	"go.uber.org/zap"
 	"time"
@@ -47,14 +48,14 @@ func (s *Service) checkAreCurrenciesExists(ctx context.Context, currencyFrom, cu
 		return err
 	}
 	if !exists {
-		return NotValidCurrencyErr
+		return errors.New(NotValidCurrency)
 	}
 	exists, err = s.exchangeRepository.IsCurrencyExists(ctx, currencyTo)
 	if err != nil {
 		return err
 	}
 	if !exists {
-		return NotValidCurrencyErr
+		return errors.New(NotValidCurrency)
 	}
 	return nil
 }

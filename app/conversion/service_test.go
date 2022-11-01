@@ -4,7 +4,6 @@ package conversion_test
 
 import (
 	"context"
-	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/conversion"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/conversion"
 	"github.com/golang/mock/gomock"
@@ -29,7 +28,7 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 		success, err := service.ConvertCurrencies(context.TODO(), userID, givenConversionOfferReq)
 		assert.False(t, success)
 		assert.NotNil(t, err)
-		assert.True(t, errors.Is(err, conversion.CurrencyConversionOfferExpiredErr))
+		assert.Equal(t, err.Error(), conversion.CurrencyConversionOfferExpired)
 	})
 	t.Run("given balance amount that user not have in its from currency account then it should return false with error", func(t *testing.T) {
 		givenConversionOfferReq := conversion.CurrencyConversionOfferRequest{
@@ -48,7 +47,7 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 		success, err := service.ConvertCurrencies(context.TODO(), userID, givenConversionOfferReq)
 		assert.False(t, success)
 		assert.NotNil(t, err)
-		assert.True(t, errors.Is(err, conversion.NotEnoughBalanceForConversionOfferErr))
+		assert.Equal(t, err.Error(), conversion.NotEnoughBalanceForConversionOffer)
 	})
 	t.Run("given valid currency conversion offer then it should return true", func(t *testing.T) {
 		givenConversionOfferReq := conversion.CurrencyConversionOfferRequest{
@@ -57,7 +56,7 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 			ExchangeRate: 2.30,
 			CreatedAt:    time.Now(),
 			ExpiresAt:    time.Now().Add(10 * time.Minute).Unix(),
-			Balance:      200,
+			Balance:      float32(200),
 		}
 		userID := 2
 		targetCurrencyBalanceAdjustAmount := givenConversionOfferReq.ExchangeRate * givenConversionOfferReq.Balance
@@ -67,7 +66,7 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 
 		mockWalletService.EXPECT().
 			AdjustUserBalanceOnGivenCurrency(gomock.Any(), userID,
-				givenConversionOfferReq.FromCurrency, givenConversionOfferReq.Balance).
+				givenConversionOfferReq.FromCurrency, -1*givenConversionOfferReq.Balance).
 			Return(true, nil)
 
 		mockWalletService.EXPECT().

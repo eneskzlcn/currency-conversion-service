@@ -25,6 +25,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Authentication"
+                ],
                 "summary": "Authenticate user",
                 "parameters": [
                     {
@@ -65,6 +68,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Conversion"
+                ],
                 "summary": "Accepts currency conversion offer",
                 "parameters": [
                     {
@@ -86,10 +92,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -101,7 +113,10 @@ const docTemplate = `{
                         "description": "Not Found"
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     }
                 }
             }
@@ -114,6 +129,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "Exchange"
                 ],
                 "summary": "Create an exchange rate offer",
                 "parameters": [
@@ -142,7 +160,10 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -154,7 +175,10 @@ const docTemplate = `{
                         "description": "Not Found"
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     }
                 }
             }
@@ -166,7 +190,7 @@ const docTemplate = `{
                     "*/*"
                 ],
                 "tags": [
-                    "Health Check"
+                    "Health"
                 ],
                 "summary": "Show the status of server.",
                 "responses": {
@@ -188,6 +212,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "Wallet"
+                ],
                 "summary": "Shows user wallet accounts",
                 "parameters": [
                     {
@@ -206,7 +233,10 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -218,7 +248,10 @@ const docTemplate = `{
                         "description": "Not Found"
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/httperror.HttpError"
+                        }
                     }
                 }
             }
@@ -295,6 +328,17 @@ const docTemplate = `{
                 },
                 "to_currency": {
                     "type": "string"
+                }
+            }
+        },
+        "httperror.HttpError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
                 }
             }
         },
