@@ -1,8 +1,7 @@
 package conversion
 
-import "errors"
-
-var (
-	CurrencyConversionOfferExpiredErr     = errors.New("given conversion offer expired")
-	NotEnoughBalanceForConversionOfferErr = errors.New("user not have enough balance to make the conversion")
+const (
+	CurrencyConversionOfferExpired      = "given conversion offer expired"
+	NotEnoughBalanceForConversionOffer  = "user not have enough balance to make the conversion"
+	SuccessfulCurrencyConversionMessage = "successfully converted currencies"
 )

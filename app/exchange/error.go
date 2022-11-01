@@ -1,7 +1,5 @@
 package exchange
 
-import "errors"
-
-var (
-	NotValidCurrencyErr = errors.New("not valid currency")
+const (
+	NotValidCurrency = "not valid currency"
 )

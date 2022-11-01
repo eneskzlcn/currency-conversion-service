@@ -25,7 +25,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 	t.Run("given valid token then it should call next handler without status unauthorized", func(t *testing.T) {
 		givenConfig := config.Jwt{
 			ATPrivateKey:        "private",
-			ATExpirationSeconds: 10,
+			ATExpirationMinutes: 10,
 		}
 		givenUser := entity.User{
 			ID:       1,
