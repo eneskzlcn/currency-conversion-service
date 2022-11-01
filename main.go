@@ -46,7 +46,8 @@ func run() error {
 	exchangeService := exchange.NewService(exchangeRepository, logger)
 	exchangeHttpHandler := exchange.NewHttpHandler(exchangeService, authGuard, logger)
 
-	conversionService := conversion.NewService(walletService, logger)
+	conversionRepository := conversion.NewRepository(db, logger)
+	conversionService := conversion.NewService(walletService, logger, conversionRepository)
 	conversionHttpHandler := conversion.NewHttpHandler(conversionService, authGuard, logger)
 
 	server := server.New([]server.Handler{

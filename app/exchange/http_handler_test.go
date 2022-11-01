@@ -1,9 +1,8 @@
-//go:build unit
-
 package exchange_test
 
 import (
 	"errors"
+	"github.com/eneskzlcn/currency-conversion-service/app/common"
 	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
 	"github.com/eneskzlcn/currency-conversion-service/app/exchange"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/exchange"
@@ -17,17 +16,24 @@ import (
 
 func TestHandler_RegisterRoutes(t *testing.T) {
 	app := fiber.New()
-	handler, _, mockAuthGuard := createHandlerWithMockExchangeServiceAndAuthGuard(t)
+	httpHandler, _, mockAuthGuard := createHandlerWithMockExchangeServiceAndAuthGuard(t)
 	mockAuthGuard.EXPECT().ProtectWithJWT(gomock.Any()).Return(func(ctx *fiber.Ctx) error { return nil })
-	handler.RegisterRoutes(app)
+	httpHandler.RegisterRoutes(app)
 
 	testutil.AssertRouteRegistered(t, app, fiber.MethodGet, "/exchange/rate")
 }
 func TestHandler_GetExchangeRate(t *testing.T) {
-	app := fiber.New()
-	handler, mockExchangeService, _ := createHandlerWithMockExchangeServiceAndAuthGuard(t)
-	app.Get("/rate", handler.GetExchangeRate)
+	httpHandler, mockExchangeService, _ := createHandlerWithMockExchangeServiceAndAuthGuard(t)
+	userID := 1
+	mockAuthMiddleware := func(handl fiber.Handler) fiber.Handler {
+		return func(ctx *fiber.Ctx) error {
+			ctx.Locals(common.USER_ID_CTX_KEY, userID)
+			return handl(ctx)
+		}
+	}
 	t.Run("given not valid exchange rate request then it should return bad request", func(t *testing.T) {
+		app := fiber.New()
+		app.Get("/rate", httpHandler.GetExchangeRate)
 		givenRequest := "notvalidexchangerate"
 		req := testutil.MakeTestRequestWithBody(fiber.MethodGet, "/rate", givenRequest)
 		resp, err := app.Test(req)
@@ -35,11 +41,13 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
 	})
 	t.Run("given valid exchange rate request but unexpected error occurred on service then return status internal server error", func(t *testing.T) {
+		app := fiber.New()
+		app.Get("/rate", mockAuthMiddleware(httpHandler.GetExchangeRate))
 		givenRequest := exchange.ExchangeRateRequest{
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
 		}
-		userID := 1
+
 		mockExchangeService.EXPECT().PrepareExchangeRateOffer(gomock.Any(), userID, givenRequest).
 			Return(exchange.ExchangeRateResponse{}, errors.New(""))
 
@@ -49,6 +57,8 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
 	})
 	t.Run("given valid exchange rate then it should return exchange rate response with status created", func(t *testing.T) {
+		app := fiber.New()
+		app.Get("/rate", mockAuthMiddleware(httpHandler.GetExchangeRate))
 		givenRequest := exchange.ExchangeRateRequest{
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",

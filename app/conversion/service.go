@@ -3,6 +3,7 @@ package conversion
 import (
 	"context"
 	"errors"
+	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	"go.uber.org/zap"
 	"time"
 )
@@ -11,19 +12,27 @@ type WalletService interface {
 	GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error)
 	AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error)
 }
+type ConversionRepository interface {
+	GetUserActiveExchangeOffer(ctx context.Context, dto UserActiveExchangeOfferDTO) (entity.UserActiveExchangeOffer, error)
+}
 type Service struct {
 	walletService WalletService
 	logger        *zap.SugaredLogger
+	repository    ConversionRepository
 }
 
-func NewService(walletService WalletService, logger *zap.SugaredLogger) *Service {
+func NewService(walletService WalletService, logger *zap.SugaredLogger, repository ConversionRepository) *Service {
 	if walletService == nil {
 		return nil
 	}
-	return &Service{walletService: walletService, logger: logger}
+	return &Service{walletService: walletService, logger: logger, repository: repository}
 }
 func (s *Service) ConvertCurrencies(ctx context.Context, userID int, request CurrencyConversionOfferRequest) (bool, error) {
-	if !s.isValidConversionOfferExchangeRate(request.ExpiresAt) {
+	if err := s.checkExchangeOfferSameWithTheUserActiveExchangeOffer(ctx, userID, request); err != nil {
+		s.logger.Debug(err)
+		return false, err
+	}
+	if s.isCurrencyConversionOfferExpired(request.ExpiresAt) {
 		s.logger.Debug(CurrencyConversionOfferExpired)
 		return false, errors.New(CurrencyConversionOfferExpired)
 	}
@@ -44,8 +53,24 @@ func (s *Service) ConvertCurrencies(ctx context.Context, userID int, request Cur
 	}
 	return true, nil
 }
-func (s *Service) isValidConversionOfferExchangeRate(expiresAtUnix int64) bool {
-	return expiresAtUnix >= time.Now().Local().Unix()
+func (s *Service) checkExchangeOfferSameWithTheUserActiveExchangeOffer(ctx context.Context, userID int, request CurrencyConversionOfferRequest) error {
+	userActiveExchangeOffer, err := s.repository.GetUserActiveExchangeOffer(ctx, UserActiveExchangeOfferDTO{
+		UserID:       userID,
+		FromCurrency: request.FromCurrency,
+		ToCurrency:   request.ToCurrency,
+	})
+	if err != nil {
+		s.logger.Debug(err)
+		return err
+	}
+	if userActiveExchangeOffer.ExchangeRate != request.ExchangeRate ||
+		userActiveExchangeOffer.OfferExpiresAt != request.ExpiresAt {
+		return errors.New(ExchangeOfferNotSameWithSavedUserOffer)
+	}
+	return nil
+}
+func (s *Service) isCurrencyConversionOfferExpired(expiresAtUnix int64) bool {
+	return expiresAtUnix < time.Now().Local().Unix()
 }
 func (s *Service) isUserHasEnoughBalanceToMakeConversion(ctx context.Context, userID int, currency string, conversionBalance float32) (bool, error) {
 	userBalanceInCurrencyFrom, err := s.walletService.

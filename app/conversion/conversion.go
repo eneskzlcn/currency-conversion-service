@@ -10,3 +10,9 @@ type CurrencyConversionOfferRequest struct {
 	ExpiresAt    int64     `json:"expires_at"`
 	Balance      float32   `json:"balance"`
 }
+
+type UserActiveExchangeOfferDTO struct {
+	UserID       int
+	FromCurrency string
+	ToCurrency   string
+}

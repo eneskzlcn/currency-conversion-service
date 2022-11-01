@@ -4,7 +4,9 @@ package conversion_test
 
 import (
 	"context"
+	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/conversion"
+	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/conversion"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -14,7 +16,29 @@ import (
 )
 
 func TestService_CreateCurrencyConversion(t *testing.T) {
-	service, mockWalletService := createServiceWithMockConversionRepository(t)
+	service, mockWalletService, mockConversionRepo := createServiceWithMockWalletServiceAndConversionRepository(t)
+	t.Run("given offer not same with saved user exchange rate offer then it should return false with error", func(t *testing.T) {
+		givenConversionOfferReq := conversion.CurrencyConversionOfferRequest{
+			FromCurrency: "USD",
+			ToCurrency:   "TRY",
+			ExchangeRate: 2.30,
+			CreatedAt:    time.Now(),
+			ExpiresAt:    time.Now().Add(-10 * time.Minute).Unix(),
+			Balance:      200,
+		}
+		userID := 1
+		givenUserActiveExchangeOfferDTO := conversion.UserActiveExchangeOfferDTO{
+			UserID:       userID,
+			FromCurrency: givenConversionOfferReq.FromCurrency,
+			ToCurrency:   givenConversionOfferReq.ToCurrency,
+		}
+
+		mockConversionRepo.EXPECT().GetUserActiveExchangeOffer(gomock.Any(), givenUserActiveExchangeOfferDTO).
+			Return(entity.UserActiveExchangeOffer{}, errors.New(""))
+		success, err := service.ConvertCurrencies(context.TODO(), userID, givenConversionOfferReq)
+		assert.NotNil(t, err)
+		assert.False(t, success)
+	})
 	t.Run("given expired exchange offer request then it should return false with error", func(t *testing.T) {
 		givenConversionOfferReq := conversion.CurrencyConversionOfferRequest{
 			FromCurrency: "USD",
@@ -25,6 +49,16 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 			Balance:      200,
 		}
 		userID := 2
+		expectedUserActiveExchangeOffer := entity.UserActiveExchangeOffer{
+			UserID:         userID,
+			FromCurrency:   givenConversionOfferReq.FromCurrency,
+			ToCurrency:     givenConversionOfferReq.ToCurrency,
+			ExchangeRate:   givenConversionOfferReq.ExchangeRate,
+			OfferCreatedAt: givenConversionOfferReq.CreatedAt,
+			OfferExpiresAt: givenConversionOfferReq.ExpiresAt,
+		}
+		mockConversionRepo.EXPECT().GetUserActiveExchangeOffer(gomock.Any(), gomock.Any()).
+			Return(expectedUserActiveExchangeOffer, nil)
 		success, err := service.ConvertCurrencies(context.TODO(), userID, givenConversionOfferReq)
 		assert.False(t, success)
 		assert.NotNil(t, err)
@@ -40,7 +74,16 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 			Balance:      200,
 		}
 		userID := 2
-
+		expectedUserActiveExchangeOffer := entity.UserActiveExchangeOffer{
+			UserID:         userID,
+			FromCurrency:   givenConversionOfferReq.FromCurrency,
+			ToCurrency:     givenConversionOfferReq.ToCurrency,
+			ExchangeRate:   givenConversionOfferReq.ExchangeRate,
+			OfferCreatedAt: givenConversionOfferReq.CreatedAt,
+			OfferExpiresAt: givenConversionOfferReq.ExpiresAt,
+		}
+		mockConversionRepo.EXPECT().GetUserActiveExchangeOffer(gomock.Any(), gomock.Any()).
+			Return(expectedUserActiveExchangeOffer, nil)
 		mockWalletService.EXPECT().
 			GetUserBalanceOnGivenCurrency(gomock.Any(), userID, givenConversionOfferReq.FromCurrency).
 			Return(float32(100), nil)
@@ -59,6 +102,16 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 			Balance:      float32(200),
 		}
 		userID := 2
+		expectedUserActiveExchangeOffer := entity.UserActiveExchangeOffer{
+			UserID:         userID,
+			FromCurrency:   givenConversionOfferReq.FromCurrency,
+			ToCurrency:     givenConversionOfferReq.ToCurrency,
+			ExchangeRate:   givenConversionOfferReq.ExchangeRate,
+			OfferCreatedAt: givenConversionOfferReq.CreatedAt,
+			OfferExpiresAt: givenConversionOfferReq.ExpiresAt,
+		}
+		mockConversionRepo.EXPECT().GetUserActiveExchangeOffer(gomock.Any(), gomock.Any()).
+			Return(expectedUserActiveExchangeOffer, nil)
 		targetCurrencyBalanceAdjustAmount := givenConversionOfferReq.ExchangeRate * givenConversionOfferReq.Balance
 		mockWalletService.EXPECT().
 			GetUserBalanceOnGivenCurrency(gomock.Any(), userID, givenConversionOfferReq.FromCurrency).
@@ -79,8 +132,9 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 		assert.True(t, success)
 	})
 }
-func createServiceWithMockConversionRepository(t *testing.T) (*conversion.Service, *mocks.MockWalletService) {
+func createServiceWithMockWalletServiceAndConversionRepository(t *testing.T) (*conversion.Service, *mocks.MockWalletService, *mocks.MockConversionRepository) {
 	ctrl := gomock.NewController(t)
-	mockWalletRepo := mocks.NewMockWalletService(ctrl)
-	return conversion.NewService(mockWalletRepo, zap.S()), mockWalletRepo
+	mockWalletService := mocks.NewMockWalletService(ctrl)
+	mockConversionRepo := mocks.NewMockConversionRepository(ctrl)
+	return conversion.NewService(mockWalletService, zap.S(), mockConversionRepo), mockWalletService, mockConversionRepo
 }
