@@ -29,6 +29,15 @@ CREATE TABLE IF NOT EXISTS user_wallets(
     PRIMARY KEY (user_id, currency_code)
 );
 
+CREATE TABLE IF NOT EXISTS user_active_exchange_offers(
+    user_id INTEGER REFERENCES users ON DELETE CASCADE ON UPDATE CASCADE,
+    currency_from VARCHAR NOT NULL REFERENCES currencies ON DELETE CASCADE ON UPDATE CASCADE,
+    currency_to VARCHAR NOT NULL REFERENCES currencies ON DELETE CASCADE ON UPDATE CASCADE,
+    exchange_rate FLOAT NOT NULL,
+    offer_created_at TIMESTAMP NOT NULL,
+    offer_expires_at INT NOT NULL,
+    PRIMARY KEY(user_id, currency_from, currency_to)
+);
 INSERT INTO currencies (code) VALUES ('TRY');
 INSERT INTO currencies (code) VALUES ('USD');
 

@@ -2,13 +2,14 @@ package exchange
 
 import (
 	"context"
+	"github.com/eneskzlcn/currency-conversion-service/app/common"
 	"github.com/eneskzlcn/currency-conversion-service/app/common/httperror"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
 
 type ExchangeService interface {
-	PrepareExchangeRateOffer(ctx context.Context, request ExchangeRateRequest) (ExchangeRateResponse, error)
+	PrepareExchangeRateOffer(ctx context.Context, userID int, request ExchangeRateRequest) (ExchangeRateResponse, error)
 }
 type AuthGuard interface {
 	ProtectWithJWT(handler fiber.Handler) fiber.Handler
@@ -38,12 +39,16 @@ func NewHttpHandler(service ExchangeService, guard AuthGuard, logger *zap.Sugare
 //@Failure 500 {object} httperror.HttpError
 //@Router /exchange/rate [get]
 func (h *HttpHandler) GetExchangeRate(ctx *fiber.Ctx) error {
-	h.logger.Info("Exchange Rate Offer Request Arrived")
+	userID, exists := ctx.Locals(common.USER_ID_CTX_KEY).(int)
+	h.logger.Info("Exchange Rate Offer Request Arrived. User ID: %d", userID)
+	if !exists {
+		return ctx.Status(fiber.StatusBadRequest).JSON(httperror.NewBadRequestError(common.UserNotInContext))
+	}
 	var request ExchangeRateRequest
 	if err := ctx.BodyParser(&request); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperror.NewBadRequestError(err.Error()))
 	}
-	exchangeRate, err := h.exchangeService.PrepareExchangeRateOffer(ctx.Context(), request)
+	exchangeRate, err := h.exchangeService.PrepareExchangeRateOffer(ctx.Context(), userID, request)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(httperror.NewInternalServerError(err.Error()))
 	}

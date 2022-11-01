@@ -64,3 +64,18 @@ func (mr *MockExchangeRepositoryMockRecorder) IsCurrencyExists(arg0, arg1 interf
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCurrencyExists", reflect.TypeOf((*MockExchangeRepository)(nil).IsCurrencyExists), arg0, arg1)
 }
+
+// SetUserActiveExchangeRateOffer mocks base method.
+func (m *MockExchangeRepository) SetUserActiveExchangeRateOffer(arg0 context.Context, arg1 entity.UserActiveExchangeOffer) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetUserActiveExchangeRateOffer", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetUserActiveExchangeRateOffer indicates an expected call of SetUserActiveExchangeRateOffer.
+func (mr *MockExchangeRepositoryMockRecorder) SetUserActiveExchangeRateOffer(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserActiveExchangeRateOffer", reflect.TypeOf((*MockExchangeRepository)(nil).SetUserActiveExchangeRateOffer), arg0, arg1)
+}

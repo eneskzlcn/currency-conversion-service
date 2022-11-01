@@ -24,9 +24,10 @@ func TestService_CreateExchangeRate(t *testing.T) {
 			FromCurrency: "",
 			ToCurrency:   "TRY",
 		}
+		userID := 1
 		mockExchangeRepository.EXPECT().IsCurrencyExists(gomock.Any(), givenRequest.FromCurrency).
 			Return(false, nil)
-		exchangeDateResp, err := service.PrepareExchangeRateOffer(context.Background(), givenRequest)
+		exchangeDateResp, err := service.PrepareExchangeRateOffer(context.Background(), userID, givenRequest)
 		assert.Equal(t, err.Error(), exchange.NotValidCurrency)
 		assert.Empty(t, exchangeDateResp)
 	})
@@ -35,11 +36,12 @@ func TestService_CreateExchangeRate(t *testing.T) {
 			FromCurrency: "TRY",
 			ToCurrency:   "",
 		}
+		userID := 1
 		mockExchangeRepository.EXPECT().IsCurrencyExists(gomock.Any(), givenRequest.FromCurrency).
 			Return(true, nil)
 		mockExchangeRepository.EXPECT().IsCurrencyExists(gomock.Any(), givenRequest.ToCurrency).
 			Return(false, nil)
-		exchangeDateResp, err := service.PrepareExchangeRateOffer(context.Background(), givenRequest)
+		exchangeDateResp, err := service.PrepareExchangeRateOffer(context.Background(), userID, givenRequest)
 		assert.Equal(t, err.Error(), exchange.NotValidCurrency)
 		assert.Empty(t, exchangeDateResp)
 	})
@@ -58,7 +60,7 @@ func TestService_CreateExchangeRate(t *testing.T) {
 				givenRequest.FromCurrency, givenRequest.ToCurrency).
 			Return(entity.Exchange{}, errors.New("exchange not found"))
 
-		exchangeDateResp, err := service.PrepareExchangeRateOffer(context.Background(), givenRequest)
+		exchangeDateResp, err := service.PrepareExchangeRateOffer(context.Background(), 1, givenRequest)
 		assert.NotNil(t, err)
 		assert.Empty(t, exchangeDateResp)
 	})
@@ -75,6 +77,7 @@ func TestService_CreateExchangeRate(t *testing.T) {
 			CreatedAt:    time.Now(),
 			UpdatedAt:    time.Now(),
 		}
+		userID := 1
 		expectedResponse := exchange.ExchangeRateResponse{
 			FromCurrency: givenRequest.FromCurrency,
 			ToCurrency:   givenRequest.ToCurrency,
@@ -82,6 +85,7 @@ func TestService_CreateExchangeRate(t *testing.T) {
 			CreatedAt:    givenExchange.CreatedAt,
 			ExpiresAt:    givenExchange.UpdatedAt.Unix(),
 		}
+
 		mockExchangeRepository.EXPECT().IsCurrencyExists(gomock.Any(), givenRequest.FromCurrency).
 			Return(true, nil)
 		mockExchangeRepository.EXPECT().IsCurrencyExists(gomock.Any(), givenRequest.ToCurrency).
@@ -92,7 +96,9 @@ func TestService_CreateExchangeRate(t *testing.T) {
 				givenRequest.FromCurrency, givenRequest.ToCurrency).
 			Return(givenExchange, nil)
 
-		exchangeRateResp, err := service.PrepareExchangeRateOffer(context.Background(), givenRequest)
+		mockExchangeRepository.EXPECT().
+			SetUserActiveExchangeRateOffer(gomock.Any(), gomock.Any()).Return(true, nil)
+		exchangeRateResp, err := service.PrepareExchangeRateOffer(context.Background(), userID, givenRequest)
 		assert.Nil(t, err)
 		assert.Equal(t, expectedResponse.ExchangeRate, exchangeRateResp.ExchangeRate)
 	})

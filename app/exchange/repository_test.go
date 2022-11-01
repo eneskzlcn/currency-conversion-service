@@ -81,3 +81,42 @@ func TestRepository_GetExchangeValuesForGivenCurrencies(t *testing.T) {
 		assert.Empty(t, exchange)
 	})
 }
+
+func TestRepository_SetUserActiveExchangeRateOffer(t *testing.T) {
+	db, sqlmock := postgres.NewMockPostgres()
+	repository := exchange.NewRepository(db, zap.S())
+	query := regexp.QuoteMeta(`INSERT INTO user_active_exchange_offers(user_id, 
+	currency_from, currency_to, exchange_rate, offer_created_at, offer_expires_at)
+	VALUES ($1, $2, $3, $4, $5, $6) 
+	ON CONFLICT(user_id, currency_from, currency_To) DO
+	UPDATE SET exchange_rate = $4, offer_created_at = $5, offer_expires_at = $6`)
+
+	t.Run("given existing user, and currencies then it should create if not exists or update active exchange offer", func(t *testing.T) {
+		offer := entity.UserActiveExchangeOffer{
+			UserID:         2,
+			FromCurrency:   "TRY",
+			ToCurrency:     "USD",
+			ExchangeRate:   2.2,
+			OfferCreatedAt: time.Now(),
+			OfferExpiresAt: 12312412414,
+		}
+		sqlmock.ExpectQuery(query).WillReturnRows(sqlmock.NewRows([]string{}))
+		success, err := repository.SetUserActiveExchangeRateOffer(context.TODO(), offer)
+		assert.Nil(t, err)
+		assert.True(t, success)
+	})
+	t.Run("given not existing user or currencies then it should return false with error", func(t *testing.T) {
+		offer := entity.UserActiveExchangeOffer{
+			UserID:         -1,
+			FromCurrency:   "",
+			ToCurrency:     "",
+			ExchangeRate:   2.2,
+			OfferCreatedAt: time.Now(),
+			OfferExpiresAt: 12312412414,
+		}
+		sqlmock.ExpectQuery(query).WillReturnError(errors.New("not existing user or currency"))
+		success, err := repository.SetUserActiveExchangeRateOffer(context.TODO(), offer)
+		assert.NotNil(t, err)
+		assert.False(t, success)
+	})
+}

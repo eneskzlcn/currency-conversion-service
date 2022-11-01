@@ -36,16 +36,16 @@ func (m *MockExchangeService) EXPECT() *MockExchangeServiceMockRecorder {
 }
 
 // PrepareExchangeRateOffer mocks base method.
-func (m *MockExchangeService) PrepareExchangeRateOffer(arg0 context.Context, arg1 exchange.ExchangeRateRequest) (exchange.ExchangeRateResponse, error) {
+func (m *MockExchangeService) PrepareExchangeRateOffer(arg0 context.Context, arg1 int, arg2 exchange.ExchangeRateRequest) (exchange.ExchangeRateResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PrepareExchangeRateOffer", arg0, arg1)
+	ret := m.ctrl.Call(m, "PrepareExchangeRateOffer", arg0, arg1, arg2)
 	ret0, _ := ret[0].(exchange.ExchangeRateResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // PrepareExchangeRateOffer indicates an expected call of PrepareExchangeRateOffer.
-func (mr *MockExchangeServiceMockRecorder) PrepareExchangeRateOffer(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockExchangeServiceMockRecorder) PrepareExchangeRateOffer(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareExchangeRateOffer", reflect.TypeOf((*MockExchangeService)(nil).PrepareExchangeRateOffer), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareExchangeRateOffer", reflect.TypeOf((*MockExchangeService)(nil).PrepareExchangeRateOffer), arg0, arg1, arg2)
 }

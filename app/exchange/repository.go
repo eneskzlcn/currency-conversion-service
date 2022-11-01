@@ -41,3 +41,18 @@ func (r *Repository) GetExchangeValuesForGivenCurrencies(ctx context.Context, fr
 	}
 	return exchange, nil
 }
+func (r *Repository) SetUserActiveExchangeRateOffer(ctx context.Context, offer entity.UserActiveExchangeOffer) (bool, error) {
+	query := `
+	INSERT INTO user_active_exchange_offers(user_id, 
+	currency_from, currency_to, exchange_rate, offer_created_at, offer_expires_at)
+	VALUES ($1, $2, $3, $4, $5, $6) 
+	ON CONFLICT(user_id, currency_from, currency_To) DO
+	UPDATE SET exchange_rate = $4, offer_created_at = $5, offer_expires_at = $6
+	`
+	row := r.db.QueryRowContext(ctx, query, offer.UserID,
+		offer.FromCurrency, offer.ToCurrency, offer.ExchangeRate, offer.OfferCreatedAt, offer.OfferExpiresAt)
+	if err := row.Err(); err != nil {
+		return false, err
+	}
+	return true, nil
+}
