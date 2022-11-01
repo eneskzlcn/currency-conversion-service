@@ -2,6 +2,7 @@ version: '3'
 services:
   postgres-db:
     image: postgres:latest
+    container_name: currency-conversion-db
     ports:
       - "5435:5432"
     environment:
@@ -10,5 +11,29 @@ services:
       POSTGRES_PASSWORD: "currency"
     volumes:
       - currency-volume:/var/lib/postgresql/data
+    networks:
+      - currency-network
+  app:
+    container_name: currency-conversion-service
+    build: .
+    networks:
+      - currency-network
+    ports:
+      - "4001:4001"
+    depends_on:
+      - postgres-db
+    environment:
+      - APP_ENV=local
+      - JWT_AT_PRIVATE_KEY=MySecretKey
+      - JWT_AT_EXPIRATION_MIN=400
+      - DB_USERNAME=currency
+      - DB_PASSWORD=currency
+      - DB_NAME=currency
+      - DB_HOST=currency-conversion-db
+      - DB_PORT=5432
+      - SERVER_PORT=4001
 volumes:
   currency-volume:
+
+networks:
+  currency-network:
