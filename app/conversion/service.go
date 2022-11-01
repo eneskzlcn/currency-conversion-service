@@ -59,7 +59,7 @@ func (s *Service) isUserHasEnoughBalanceToMakeConversion(ctx context.Context, us
 	return true, nil
 }
 func (s *Service) updateUserWalletBalancesByConversion(ctx context.Context, userID int, request CurrencyConversionOfferRequest) error {
-	fromCurrencyBalanceAdjustAmount := request.Balance
+	fromCurrencyBalanceAdjustAmount := -1 * request.Balance
 	toCurrencyBalanceAdjustAmount := request.Balance * request.ExchangeRate
 
 	success, err := s.walletService.AdjustUserBalanceOnGivenCurrency(ctx, userID,
