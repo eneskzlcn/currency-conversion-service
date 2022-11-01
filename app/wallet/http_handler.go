@@ -14,14 +14,14 @@ type WalletService interface {
 type AuthGuard interface {
 	ProtectWithJWT(handler fiber.Handler) fiber.Handler
 }
-type Handler struct {
+type HttpHandler struct {
 	walletService WalletService
 	authGuard     AuthGuard
 	logger        *zap.SugaredLogger
 }
 
-func NewHandler(service WalletService, guard AuthGuard, logger *zap.SugaredLogger) *Handler {
-	return &Handler{
+func NewHttpHandler(service WalletService, guard AuthGuard, logger *zap.SugaredLogger) *HttpHandler {
+	return &HttpHandler{
 		walletService: service,
 		authGuard:     guard,
 		logger:        logger,
@@ -41,8 +41,9 @@ func NewHandler(service WalletService, guard AuthGuard, logger *zap.SugaredLogge
 //@Failure 401 {string} string "Unauthorized"
 //@Failure 500 {object} httperror.HttpError
 //@Router /wallets [get]
-func (h *Handler) GetUserWalletAccounts(ctx *fiber.Ctx) error {
+func (h *HttpHandler) GetUserWalletAccounts(ctx *fiber.Ctx) error {
 	userID, exists := ctx.Locals(common.USER_ID_CTX_KEY).(int)
+	h.logger.Infof("List wallet accounts requesta arrived. User ID:%d", userID)
 	if !exists {
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperror.NewBadRequestError(common.UserNotInContext))
 	}
@@ -52,6 +53,6 @@ func (h *Handler) GetUserWalletAccounts(ctx *fiber.Ctx) error {
 	}
 	return ctx.Status(fiber.StatusOK).JSON(userWalletAccounts)
 }
-func (h *Handler) RegisterRoutes(app *fiber.App) {
+func (h *HttpHandler) RegisterRoutes(app *fiber.App) {
 	app.Get("/wallets", h.authGuard.ProtectWithJWT(h.GetUserWalletAccounts))
 }

@@ -18,7 +18,7 @@ import (
 )
 
 func TestHandler_ConvertCurrencies(t *testing.T) {
-	handler, mockConversionService, _ := createHandlerWithMockConversionServiceAndAuthGuard(t)
+	httpHandler, mockConversionService, _ := createHandlerWithMockConversionServiceAndAuthGuard(t)
 	route := "/offer"
 	userID := 2
 	mockAuthMiddleware := func(handl fiber.Handler) fiber.Handler {
@@ -29,7 +29,7 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 	}
 	t.Run("given conversion offer request but userID not in context then it should return status bad request", func(t *testing.T) {
 		app := fiber.New()
-		app.Post(route, handler.CurrencyConversionOffer)
+		app.Post(route, httpHandler.CurrencyConversionOffer)
 		givenOfferRequest := conversion.CurrencyConversionOfferRequest{
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
@@ -45,7 +45,7 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 	})
 	t.Run("given invalid conversion offer request then it should return status bad request", func(t *testing.T) {
 		app := fiber.New()
-		app.Post(route, mockAuthMiddleware(handler.CurrencyConversionOffer))
+		app.Post(route, mockAuthMiddleware(httpHandler.CurrencyConversionOffer))
 		givenOfferRequest := "invalidRequest"
 		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		resp, err := app.Test(req)
@@ -55,7 +55,7 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 
 	t.Run("given conversion offer request but error returned from service then it should return status internal server error ", func(t *testing.T) {
 		app := fiber.New()
-		app.Post(route, mockAuthMiddleware(handler.CurrencyConversionOffer))
+		app.Post(route, mockAuthMiddleware(httpHandler.CurrencyConversionOffer))
 		givenOfferRequest := conversion.CurrencyConversionOfferRequest{
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
@@ -75,7 +75,7 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 	})
 	t.Run("given conversion offer request then it should return status ok and ", func(t *testing.T) {
 		app := fiber.New()
-		app.Post(route, mockAuthMiddleware(handler.CurrencyConversionOffer))
+		app.Post(route, mockAuthMiddleware(httpHandler.CurrencyConversionOffer))
 		givenOfferRequest := conversion.CurrencyConversionOfferRequest{
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
@@ -96,16 +96,16 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 }
 func TestHandler_RegisterRoutes(t *testing.T) {
 	app := fiber.New()
-	handler, _, mockAuthGuard := createHandlerWithMockConversionServiceAndAuthGuard(t)
+	httpHandler, _, mockAuthGuard := createHandlerWithMockConversionServiceAndAuthGuard(t)
 	mockAuthGuard.EXPECT().ProtectWithJWT(gomock.Any()).Return(func(ctx *fiber.Ctx) error { return nil })
-	handler.RegisterRoutes(app)
+	httpHandler.RegisterRoutes(app)
 	testutil.AssertRouteRegistered(t, app, fiber.MethodPost, "/conversion/offer")
 
 }
-func createHandlerWithMockConversionServiceAndAuthGuard(t *testing.T) (*conversion.Handler, *mocks.MockConversionService, *mocks.MockAuthGuard) {
+func createHandlerWithMockConversionServiceAndAuthGuard(t *testing.T) (*conversion.HttpHandler, *mocks.MockConversionService, *mocks.MockAuthGuard) {
 	ctrl := gomock.NewController(t)
 	mockConversionService := mocks.NewMockConversionService(ctrl)
 	mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
-	return conversion.NewHandler(mockConversionService, mockAuthGuard, zap.S()),
+	return conversion.NewHttpHandler(mockConversionService, mockAuthGuard, zap.S()),
 		mockConversionService, mockAuthGuard
 }

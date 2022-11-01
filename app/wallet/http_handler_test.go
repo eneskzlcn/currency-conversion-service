@@ -77,9 +77,9 @@ func TestHandler_RegisterRoutes(t *testing.T) {
 	testutil.AssertRouteRegistered(t, app, fiber.MethodGet, "/wallets")
 }
 
-func createHandlerWithMockWalletServiceAndAuthGuard(t *testing.T) (*wallet.Handler, *mocks.MockWalletService, *mocks.MockAuthGuard) {
+func createHandlerWithMockWalletServiceAndAuthGuard(t *testing.T) (*wallet.HttpHandler, *mocks.MockWalletService, *mocks.MockAuthGuard) {
 	ctrl := gomock.NewController(t)
 	mockWalletService := mocks.NewMockWalletService(ctrl)
 	mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
-	return wallet.NewHandler(mockWalletService, mockAuthGuard, zap.S()), mockWalletService, mockAuthGuard
+	return wallet.NewHttpHandler(mockWalletService, mockAuthGuard, zap.S()), mockWalletService, mockAuthGuard
 }

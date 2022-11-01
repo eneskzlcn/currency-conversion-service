@@ -70,9 +70,9 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 	})
 }
 
-func createHandlerWithMockExchangeServiceAndAuthGuard(t *testing.T) (*exchange.Handler, *mocks.MockExchangeService, *mocks.MockAuthGuard) {
+func createHandlerWithMockExchangeServiceAndAuthGuard(t *testing.T) (*exchange.HttpHandler, *mocks.MockExchangeService, *mocks.MockAuthGuard) {
 	ctrl := gomock.NewController(t)
 	mockExchangeService := mocks.NewMockExchangeService(ctrl)
 	mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
-	return exchange.NewHandler(mockExchangeService, mockAuthGuard, zap.S()), mockExchangeService, mockAuthGuard
+	return exchange.NewHttpHandler(mockExchangeService, mockAuthGuard, zap.S()), mockExchangeService, mockAuthGuard
 }

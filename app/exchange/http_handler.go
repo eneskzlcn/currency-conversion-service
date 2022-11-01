@@ -13,14 +13,14 @@ type ExchangeService interface {
 type AuthGuard interface {
 	ProtectWithJWT(handler fiber.Handler) fiber.Handler
 }
-type Handler struct {
+type HttpHandler struct {
 	exchangeService ExchangeService
 	authGuard       AuthGuard
 	logger          *zap.SugaredLogger
 }
 
-func NewHandler(service ExchangeService, guard AuthGuard, logger *zap.SugaredLogger) *Handler {
-	return &Handler{exchangeService: service, authGuard: guard, logger: logger}
+func NewHttpHandler(service ExchangeService, guard AuthGuard, logger *zap.SugaredLogger) *HttpHandler {
+	return &HttpHandler{exchangeService: service, authGuard: guard, logger: logger}
 }
 
 //GetExchangeRate godoc
@@ -37,7 +37,8 @@ func NewHandler(service ExchangeService, guard AuthGuard, logger *zap.SugaredLog
 //@Failure 404
 //@Failure 500 {object} httperror.HttpError
 //@Router /exchange/rate [get]
-func (h *Handler) GetExchangeRate(ctx *fiber.Ctx) error {
+func (h *HttpHandler) GetExchangeRate(ctx *fiber.Ctx) error {
+	h.logger.Info("Exchange Rate Offer Request Arrived")
 	var request ExchangeRateRequest
 	if err := ctx.BodyParser(&request); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperror.NewBadRequestError(err.Error()))
@@ -48,7 +49,7 @@ func (h *Handler) GetExchangeRate(ctx *fiber.Ctx) error {
 	}
 	return ctx.Status(fiber.StatusCreated).JSON(exchangeRate)
 }
-func (h *Handler) RegisterRoutes(app *fiber.App) {
+func (h *HttpHandler) RegisterRoutes(app *fiber.App) {
 	appGroup := app.Group("/exchange")
 	appGroup.Get("/rate", h.authGuard.ProtectWithJWT(h.GetExchangeRate))
 }

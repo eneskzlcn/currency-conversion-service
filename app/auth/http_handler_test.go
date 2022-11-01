@@ -16,9 +16,9 @@ import (
 )
 
 func TestHandler_Login(t *testing.T) {
-	handler, mockAuthService := createHandlerAndMockAuthService(t)
+	httpHandler, mockAuthService := createHandlerAndMockAuthService(t)
 	app := fiber.New()
-	app.Post("/login", handler.Login)
+	app.Post("/login", httpHandler.Login)
 	t.Run("given not valid login request then it should return status bad request", func(t *testing.T) {
 		loginRequestData := "asdf"
 		request := testutil.MakeTestRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
@@ -58,15 +58,15 @@ func TestRegisterRoutesSuccessfullyRegistersTheEndpointsToTheApp(t *testing.T) {
 	app := fiber.New()
 	ctrl := gomock.NewController(t)
 	mockAuthService := mocks.NewMockAuthService(ctrl)
-	handler := auth.NewHandler(mockAuthService, zap.S())
-	handler.RegisterRoutes(app)
+	httpHandler := auth.NewHttpHandler(mockAuthService, zap.S())
+	httpHandler.RegisterRoutes(app)
 	resp, err := app.Test(httptest.NewRequest(fiber.MethodPost, "/auth/login", nil))
 	assert.Nil(t, err)
 	assert.NotEqual(t, fiber.StatusNotFound, resp.StatusCode)
 }
-func createHandlerAndMockAuthService(t *testing.T) (*auth.Handler, *mocks.MockAuthService) {
+func createHandlerAndMockAuthService(t *testing.T) (*auth.HttpHandler, *mocks.MockAuthService) {
 	ctrl := gomock.NewController(t)
 	mockAuthService := mocks.NewMockAuthService(ctrl)
-	handler := auth.NewHandler(mockAuthService, zap.S())
-	return handler, mockAuthService
+	httpHandler := auth.NewHttpHandler(mockAuthService, zap.S())
+	return httpHandler, mockAuthService
 }
