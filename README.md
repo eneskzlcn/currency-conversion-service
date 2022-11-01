@@ -87,3 +87,12 @@ make migrate-tables
 You can see the swagger documentation of current endpoints after
 you start the application in the route;
 `/swagger/index.html`
+
+
+### Linter
+
+I use default golangci-lint linter specifications for linting.
+You can use the following make command to check any lint issues;
+````shell
+make linter
+````
