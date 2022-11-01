@@ -21,6 +21,20 @@ type Handler struct {
 func NewHandler(service ExchangeService, guard AuthGuard, logger *zap.SugaredLogger) *Handler {
 	return &Handler{exchangeService: service, authGuard: guard, logger: logger}
 }
+
+//GetExchangeRate godoc
+//@Summary Create an exchange rate offer
+//@Description creates an exchange rate offer for given currencies
+//@Param exchangeRateRequest body ExchangeRateRequest true "body params"
+//@Param accessToken header string true "header params"
+//@Accept  json
+//@Produce  json
+//@Success 200 {object} ExchangeRateResponse
+//@Failure 400
+//@Failure 401 {string} string "Unauthorized"
+//@Failure 404
+//@Failure 500
+//@Router /exchange/rate [get]
 func (h *Handler) GetExchangeRate(ctx *fiber.Ctx) error {
 	var request ExchangeRateRequest
 	if err := ctx.BodyParser(&request); err != nil {

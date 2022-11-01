@@ -23,6 +23,20 @@ type Handler struct {
 func NewHandler(service ConversionService, guard AuthGuard, logger *zap.SugaredLogger) *Handler {
 	return &Handler{conversionService: service, authGuard: guard, logger: logger}
 }
+
+//CurrencyConversionOffer godoc
+//@Summary Accepts currency conversion offer
+//@Description convert currencies by given conversion offer
+//@Param conversionOffer body CurrencyConversionOfferRequest true "body params"
+//@Param accessToken header string true "header params"
+//@Accept  json
+//@Produce  json
+//@Success 200
+//@Failure 401 {string} string "Unauthorized"
+//@Failure 400
+//@Failure 404
+//@Failure 500
+//@Router /conversion/offer [post]
 func (h *Handler) CurrencyConversionOffer(ctx *fiber.Ctx) error {
 	userID, exists := ctx.Locals(common.USER_ID_CTX_KEY).(int)
 	h.logger.Infof("Currency Conversion Offer Request Arrived. User ID: %d", userID)

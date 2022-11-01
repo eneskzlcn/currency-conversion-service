@@ -21,7 +21,7 @@ func main() {
 }
 
 func run() error {
-	env, exists := os.LookupEnv("DEPLOYMENT_ENV")
+	env, exists := os.LookupEnv("DEPLOY_ENV")
 	if !exists {
 		env = "local"
 	}
@@ -62,6 +62,7 @@ func run() error {
 		exchangeHandler,
 		conversionHandler,
 	}, configs.Server, logger)
+
 	logger.Sync()
 	return server.Start()
 }

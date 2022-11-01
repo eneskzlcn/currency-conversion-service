@@ -1,0 +1,202 @@
+definitions:
+  auth.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  auth.TokenResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  conversion.CurrencyConversionOfferRequest:
+    properties:
+      balance:
+        type: number
+      created_at:
+        type: string
+      exchange_rate:
+        type: number
+      expires_at:
+        type: integer
+      from_currency:
+        type: string
+      to_currency:
+        type: string
+    type: object
+  exchange.ExchangeRateRequest:
+    properties:
+      from_currency:
+        type: string
+      to_currency:
+        type: string
+    type: object
+  exchange.ExchangeRateResponse:
+    properties:
+      created_at:
+        type: string
+      exchange_rate:
+        type: number
+      expires_at:
+        type: integer
+      from_currency:
+        type: string
+      to_currency:
+        type: string
+    type: object
+  wallet.UserWalletAccount:
+    properties:
+      balance:
+        type: number
+      currency:
+        type: string
+    type: object
+  wallet.UserWalletAccountsResponse:
+    properties:
+      accounts:
+        items:
+          $ref: '#/definitions/wallet.UserWalletAccount'
+        type: array
+    type: object
+info:
+  contact: {}
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: authenticates given user by giving an access token.
+      parameters:
+      - description: body params
+        in: body
+        name: loginCredentials
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.TokenResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Authenticate user
+  /conversion/offer:
+    post:
+      consumes:
+      - application/json
+      description: convert currencies by given conversion offer
+      parameters:
+      - description: body params
+        in: body
+        name: conversionOffer
+        required: true
+        schema:
+          $ref: '#/definitions/conversion.CurrencyConversionOfferRequest'
+      - description: header params
+        in: header
+        name: accessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Accepts currency conversion offer
+  /exchange/rate:
+    get:
+      consumes:
+      - application/json
+      description: creates an exchange rate offer for given currencies
+      parameters:
+      - description: body params
+        in: body
+        name: exchangeRateRequest
+        required: true
+        schema:
+          $ref: '#/definitions/exchange.ExchangeRateRequest'
+      - description: header params
+        in: header
+        name: accessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/exchange.ExchangeRateResponse'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Create an exchange rate offer
+  /health:
+    get:
+      consumes:
+      - '*/*'
+      description: Get the status of server.
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+      summary: Show the status of server.
+      tags:
+      - Health Check
+  /wallets:
+    get:
+      consumes:
+      - application/json
+      description: shows user wallet accounts for all existing currency
+      parameters:
+      - description: header params
+        in: header
+        name: accessToken
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/wallet.UserWalletAccountsResponse'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Shows user wallet accounts
+swagger: "2.0"

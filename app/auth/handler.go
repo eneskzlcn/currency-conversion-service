@@ -13,6 +13,18 @@ type Handler struct {
 func NewHandler(service AuthService, logger *zap.SugaredLogger) *Handler {
 	return &Handler{authService: service, logger: logger}
 }
+
+// Login godoc
+// @Summary Authenticate user
+// @Description authenticates given user by giving an access token.
+// @Param loginCredentials body LoginRequest true "body params"
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} TokenResponse
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Router /auth/login [post]
 func (h *Handler) Login(ctx *fiber.Ctx) error {
 	var request LoginRequest
 	if err := ctx.BodyParser(&request); err != nil {
@@ -26,6 +38,7 @@ func (h *Handler) Login(ctx *fiber.Ctx) error {
 
 	return ctx.Status(fiber.StatusCreated).JSON(tokenResponse)
 }
+
 func (h *Handler) RegisterRoutes(app *fiber.App) {
 	appGroup := app.Group("/auth")
 	appGroup.Post("/login", h.Login)

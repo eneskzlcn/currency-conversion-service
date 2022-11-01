@@ -81,3 +81,9 @@ and creating all tables on database with static and example data
 ````shell
 make migrate-tables
 ````
+
+### Swagger
+
+You can see the swagger documentation of current endpoints after
+you start the application in the route;
+`/swagger/index.html`

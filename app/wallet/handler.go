@@ -26,6 +26,19 @@ func NewHandler(service WalletService, guard AuthGuard, logger *zap.SugaredLogge
 		logger:        logger,
 	}
 }
+
+//GetUserWalletAccounts godoc
+//@Summary Shows user wallet accounts
+//@Description shows user wallet accounts for all existing currency
+//@Accept  json
+//@Produce  json
+//@Param accessToken header string true "header params"
+//@Success 200 {object} UserWalletAccountsResponse
+//@Failure 400
+//@Failure 404
+//@Failure 401 {string} string "Unauthorized"
+//@Failure 500
+//@Router /wallets [get]
 func (h *Handler) GetUserWalletAccounts(ctx *fiber.Ctx) error {
 	userID, exists := ctx.Locals(common.USER_ID_CTX_KEY).(int)
 	if !exists {

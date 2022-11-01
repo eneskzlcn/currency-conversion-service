@@ -1,11 +1,11 @@
 build:
-	go build -o bin/currency-conversion  ./cmd/currency-conversion
+	go build -o bin/currency-conversion
 
 run:
 	./bin/currency-conversion
 
 start:
-	clear && go build -o bin/currency-conversion  ./cmd/currency-conversion && ./bin/currency-conversion
+	clear && go build -o bin/currency-conversion  && ./bin/currency-conversion
 
 clean:
 	rm -rf bin && rm -rf app/mocks && clear
@@ -18,6 +18,9 @@ migrate-tables:
 
 drop-tables:
 	go build -o postgres_drop  ./cmd/seed  && ./postgres_drop -type=drop && rm -rf postgres_drop && clear
+
+swagger:
+	swag init
 
 generate-mocks:
 	mockgen -destination=app/mocks/auth/mock_user_repository.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/auth AuthRepository
