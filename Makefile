@@ -5,19 +5,21 @@ run:
 	./bin/currency-conversion
 
 start:
-	clear && go build -o bin/currency-conversion  && ./bin/currency-conversion
+	swag init && go build -o bin/currency-conversion  && ./bin/currency-conversion
 
 clean:
-	rm -rf bin && rm -rf app/mocks && clear
+	rm -rf bin && rm -rf app/mocks && rm -rf postgres_migrate && rm -rf postgres_drop && rm -rf unit_covarage.out && clear
 
 unit-tests:
-	go test ./...
+	go test -v ./... -coverprofile=unit_coverage.out -short -tags=unit
 
+linter:
+	golangci-lint run
 migrate-tables:
-	go build -o postgres_migrate  ./cmd/seed  && ./postgres_migrate -type=migrate && rm -rf postgres_migrate && clear
+	go build -o postgres_migrate  ./seed/cmd  && ./postgres_migrate -type=migrate && rm -rf postgres_migrate && clear
 
 drop-tables:
-	go build -o postgres_drop  ./cmd/seed  && ./postgres_drop -type=drop && rm -rf postgres_drop && clear
+	go build -o postgres_drop  ./seed/cmd  && ./postgres_drop -type=drop && rm -rf postgres_drop && clear
 
 swagger:
 	swag init
