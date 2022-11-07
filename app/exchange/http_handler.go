@@ -9,7 +9,7 @@ import (
 )
 
 type ExchangeService interface {
-	PrepareExchangeRateOffer(ctx context.Context, userID int, request ExchangeRateRequest) (ExchangeRateResponse, error)
+	PrepareExchangeRateOffer(ctx context.Context, userID int, request ExchangeRateRequest) (ExchangeRateOfferResponse, error)
 }
 type AuthGuard interface {
 	ProtectWithJWT(handler fiber.Handler) fiber.Handler
@@ -32,7 +32,7 @@ func NewHttpHandler(service ExchangeService, guard AuthGuard, logger *zap.Sugare
 // @Tags Exchange
 //@Accept  json
 //@Produce  json
-//@Success 200 {object} ExchangeRateResponse
+//@Success 200 {object} ExchangeRateOfferResponse
 //@Failure 400 {object} httperror.HttpError
 //@Failure 401 {string} string "Unauthorized"
 //@Failure 404

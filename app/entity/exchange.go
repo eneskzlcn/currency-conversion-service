@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-type Exchange struct {
+type CurrencyExchangeValues struct {
 	FromCurrency string
 	ToCurrency   string
 	ExchangeRate float32

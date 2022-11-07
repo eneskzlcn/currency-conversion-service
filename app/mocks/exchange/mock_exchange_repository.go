@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	entity "github.com/eneskzlcn/currency-conversion-service/app/entity"
+	exchange "github.com/eneskzlcn/currency-conversion-service/app/exchange"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -35,19 +36,34 @@ func (m *MockExchangeRepository) EXPECT() *MockExchangeRepositoryMockRecorder {
 	return m.recorder
 }
 
-// GetExchangeValuesForGivenCurrencies mocks base method.
-func (m *MockExchangeRepository) GetExchangeValuesForGivenCurrencies(arg0 context.Context, arg1, arg2 string) (entity.Exchange, error) {
+// CreateExchangeRateOffer mocks base method.
+func (m *MockExchangeRepository) CreateExchangeRateOffer(arg0 context.Context, arg1 exchange.CreateExchangeRateOfferDTO) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetExchangeValuesForGivenCurrencies", arg0, arg1, arg2)
-	ret0, _ := ret[0].(entity.Exchange)
+	ret := m.ctrl.Call(m, "CreateExchangeRateOffer", arg0, arg1)
+	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetExchangeValuesForGivenCurrencies indicates an expected call of GetExchangeValuesForGivenCurrencies.
-func (mr *MockExchangeRepositoryMockRecorder) GetExchangeValuesForGivenCurrencies(arg0, arg1, arg2 interface{}) *gomock.Call {
+// CreateExchangeRateOffer indicates an expected call of CreateExchangeRateOffer.
+func (mr *MockExchangeRepositoryMockRecorder) CreateExchangeRateOffer(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExchangeValuesForGivenCurrencies", reflect.TypeOf((*MockExchangeRepository)(nil).GetExchangeValuesForGivenCurrencies), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateExchangeRateOffer", reflect.TypeOf((*MockExchangeRepository)(nil).CreateExchangeRateOffer), arg0, arg1)
+}
+
+// GetCurrencyExchangeValuesByCurrency mocks base method.
+func (m *MockExchangeRepository) GetCurrencyExchangeValuesByCurrency(arg0 context.Context, arg1 exchange.ExchangeCurrencyDTO) (entity.CurrencyExchangeValues, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCurrencyExchangeValuesByCurrency", arg0, arg1)
+	ret0, _ := ret[0].(entity.CurrencyExchangeValues)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCurrencyExchangeValuesByCurrency indicates an expected call of GetCurrencyExchangeValuesByCurrency.
+func (mr *MockExchangeRepositoryMockRecorder) GetCurrencyExchangeValuesByCurrency(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrencyExchangeValuesByCurrency", reflect.TypeOf((*MockExchangeRepository)(nil).GetCurrencyExchangeValuesByCurrency), arg0, arg1)
 }
 
 // IsCurrencyExists mocks base method.
@@ -63,19 +79,4 @@ func (m *MockExchangeRepository) IsCurrencyExists(arg0 context.Context, arg1 str
 func (mr *MockExchangeRepositoryMockRecorder) IsCurrencyExists(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsCurrencyExists", reflect.TypeOf((*MockExchangeRepository)(nil).IsCurrencyExists), arg0, arg1)
-}
-
-// SetUserActiveExchangeRateOffer mocks base method.
-func (m *MockExchangeRepository) SetUserActiveExchangeRateOffer(arg0 context.Context, arg1 entity.UserActiveExchangeOffer) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetUserActiveExchangeRateOffer", arg0, arg1)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SetUserActiveExchangeRateOffer indicates an expected call of SetUserActiveExchangeRateOffer.
-func (mr *MockExchangeRepositoryMockRecorder) SetUserActiveExchangeRateOffer(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUserActiveExchangeRateOffer", reflect.TypeOf((*MockExchangeRepository)(nil).SetUserActiveExchangeRateOffer), arg0, arg1)
 }

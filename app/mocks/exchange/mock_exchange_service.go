@@ -36,10 +36,10 @@ func (m *MockExchangeService) EXPECT() *MockExchangeServiceMockRecorder {
 }
 
 // PrepareExchangeRateOffer mocks base method.
-func (m *MockExchangeService) PrepareExchangeRateOffer(arg0 context.Context, arg1 int, arg2 exchange.ExchangeRateRequest) (exchange.ExchangeRateResponse, error) {
+func (m *MockExchangeService) PrepareExchangeRateOffer(arg0 context.Context, arg1 int, arg2 exchange.ExchangeRateRequest) (exchange.ExchangeRateOfferResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PrepareExchangeRateOffer", arg0, arg1, arg2)
-	ret0, _ := ret[0].(exchange.ExchangeRateResponse)
+	ret0, _ := ret[0].(exchange.ExchangeRateOfferResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

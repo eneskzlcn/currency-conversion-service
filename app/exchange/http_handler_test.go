@@ -1,3 +1,5 @@
+//go:build unit
+
 package exchange_test
 
 import (
@@ -11,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"testing"
-	"time"
 )
 
 func TestHandler_RegisterRoutes(t *testing.T) {
@@ -49,7 +50,7 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 		}
 
 		mockExchangeService.EXPECT().PrepareExchangeRateOffer(gomock.Any(), userID, givenRequest).
-			Return(exchange.ExchangeRateResponse{}, errors.New(""))
+			Return(exchange.ExchangeRateOfferResponse{}, errors.New(""))
 
 		req := testutil.MakeTestRequestWithBody(fiber.MethodGet, "/rate", givenRequest)
 		resp, err := app.Test(req)
@@ -63,12 +64,9 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
 		}
-		expectedResponse := exchange.ExchangeRateResponse{
-			FromCurrency: "TRY",
-			ToCurrency:   "USD",
-			ExchangeRate: 0.23,
-			CreatedAt:    time.Now(),
-			ExpiresAt:    time.Now().Add(exchange.ExchangeRateExpirationMinutes * time.Minute).Unix(),
+		givenExchangeRateOfferID := 2
+		expectedResponse := exchange.ExchangeRateOfferResponse{
+			ExchangeRateOfferID: givenExchangeRateOfferID,
 		}
 		mockExchangeService.EXPECT().PrepareExchangeRateOffer(gomock.Any(), gomock.Any(), givenRequest).
 			Return(expectedResponse, nil)
