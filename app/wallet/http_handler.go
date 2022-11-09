@@ -8,23 +8,23 @@ import (
 	"go.uber.org/zap"
 )
 
-type WalletService interface {
+type Service interface {
 	GetUserWalletAccounts(ctx context.Context, userID int) (UserWalletAccountsResponse, error)
 }
 type AuthGuard interface {
 	ProtectWithJWT(handler fiber.Handler) fiber.Handler
 }
-type HttpHandler struct {
-	walletService WalletService
-	authGuard     AuthGuard
-	logger        *zap.SugaredLogger
+type httpHandler struct {
+	service   Service
+	authGuard AuthGuard
+	logger    *zap.SugaredLogger
 }
 
-func NewHttpHandler(service WalletService, guard AuthGuard, logger *zap.SugaredLogger) *HttpHandler {
-	return &HttpHandler{
-		walletService: service,
-		authGuard:     guard,
-		logger:        logger,
+func NewHttpHandler(service Service, guard AuthGuard, logger *zap.SugaredLogger) *httpHandler {
+	return &httpHandler{
+		service:   service,
+		authGuard: guard,
+		logger:    logger,
 	}
 }
 
@@ -41,18 +41,18 @@ func NewHttpHandler(service WalletService, guard AuthGuard, logger *zap.SugaredL
 //@Failure 401 {string} string "Unauthorized"
 //@Failure 500 {object} httperror.HttpError
 //@Router /wallets [get]
-func (h *HttpHandler) GetUserWalletAccounts(ctx *fiber.Ctx) error {
+func (h *httpHandler) GetUserWalletAccounts(ctx *fiber.Ctx) error {
 	userID, exists := ctx.Locals(common.USER_ID_CTX_KEY).(int)
 	h.logger.Infof("List wallet accounts requesta arrived. User ID:%d", userID)
 	if !exists {
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperror.NewBadRequestError(common.UserNotInContext))
 	}
-	userWalletAccounts, err := h.walletService.GetUserWalletAccounts(ctx.Context(), userID)
+	userWalletAccounts, err := h.service.GetUserWalletAccounts(ctx.Context(), userID)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(httperror.NewInternalServerError(err.Error()))
 	}
 	return ctx.Status(fiber.StatusOK).JSON(userWalletAccounts)
 }
-func (h *HttpHandler) RegisterRoutes(app *fiber.App) {
+func (h *httpHandler) RegisterRoutes(app *fiber.App) {
 	app.Get("/wallets", h.authGuard.ProtectWithJWT(h.GetUserWalletAccounts))
 }

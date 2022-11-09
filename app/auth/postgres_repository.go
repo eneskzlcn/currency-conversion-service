@@ -7,15 +7,15 @@ import (
 	"go.uber.org/zap"
 )
 
-type Repository struct {
+type postgresRepository struct {
 	db     *sql.DB
 	logger *zap.SugaredLogger
 }
 
-func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *Repository {
-	return &Repository{db: db, logger: logger}
+func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *postgresRepository {
+	return &postgresRepository{db: db, logger: logger}
 }
-func (r *Repository) GetUserByUsernameAndPassword(ctx context.Context, username string, password string) (entity.User, error) {
+func (r *postgresRepository) GetUserByUsernameAndPassword(ctx context.Context, username string, password string) (entity.User, error) {
 	query := `
 		SELECT id, username, password, created_at, updated_at
 		FROM users WHERE username = $1 AND password = $2`

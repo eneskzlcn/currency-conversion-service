@@ -14,6 +14,11 @@ import (
 	"time"
 )
 
+type HttpHandler interface {
+	RegisterRoutes(app *fiber.App)
+	GetExchangeRate(ctx *fiber.Ctx) error
+}
+
 func TestHandler_RegisterRoutes(t *testing.T) {
 	app := fiber.New()
 	httpHandler, _, mockAuthGuard := createHandlerWithMockExchangeServiceAndAuthGuard(t)
@@ -81,9 +86,9 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 	})
 }
 
-func createHandlerWithMockExchangeServiceAndAuthGuard(t *testing.T) (*exchange.HttpHandler, *mocks.MockExchangeService, *mocks.MockAuthGuard) {
+func createHandlerWithMockExchangeServiceAndAuthGuard(t *testing.T) (HttpHandler, *mocks.MockService, *mocks.MockAuthGuard) {
 	ctrl := gomock.NewController(t)
-	mockExchangeService := mocks.NewMockExchangeService(ctrl)
+	mockExchangeService := mocks.NewMockService(ctrl)
 	mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
 	return exchange.NewHttpHandler(mockExchangeService, mockAuthGuard, zap.S()), mockExchangeService, mockAuthGuard
 }

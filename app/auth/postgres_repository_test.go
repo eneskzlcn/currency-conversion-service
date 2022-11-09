@@ -1,5 +1,3 @@
-//go:build unit
-
 package auth_test
 
 import (
@@ -15,7 +13,7 @@ import (
 	"time"
 )
 
-func TestRepository_GetUserByUsernameAndPassword(t *testing.T) {
+func TestPostgresRepository_GetUserByUsernameAndPassword(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
 	repository := auth.NewRepository(db, zap.S())
 	query := regexp.QuoteMeta(`

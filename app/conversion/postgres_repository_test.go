@@ -1,5 +1,3 @@
-//go:build unit
-
 package conversion_test
 
 import (
@@ -14,7 +12,7 @@ import (
 	"time"
 )
 
-func TestRepository_GetUserActiveExchangeOffer(t *testing.T) {
+func TestPostgresRepository_GetUserActiveExchangeOffer(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
 	repository := conversion.NewRepository(db, zap.S())
 	query := regexp.QuoteMeta(`

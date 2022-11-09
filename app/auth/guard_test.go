@@ -1,5 +1,3 @@
-//go:build unit
-
 package auth_test
 
 import (
@@ -16,9 +14,13 @@ import (
 	"testing"
 )
 
+type Guard interface {
+	ProtectWithJWT(handler fiber.Handler) fiber.Handler
+}
+
 func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMiddleware(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	mockAuthService := mocks.NewMockAuthService(ctrl)
+	mockAuthService := mocks.NewMockService(ctrl)
 	guard := auth.NewGuard(mockAuthService, zap.S())
 	app := createFiberAppWithAMockProtectedEndpoint(guard)
 
@@ -53,7 +55,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 	})
 }
 
-func createFiberAppWithAMockProtectedEndpoint(guard *auth.Guard) *fiber.App {
+func createFiberAppWithAMockProtectedEndpoint(guard Guard) *fiber.App {
 	app := fiber.New()
 	endpointToProtect := func(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusOK).SendString("Hello")

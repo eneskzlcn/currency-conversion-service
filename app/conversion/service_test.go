@@ -1,5 +1,3 @@
-//go:build unit
-
 package conversion_test
 
 import (
@@ -132,9 +130,9 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 		assert.True(t, success)
 	})
 }
-func createServiceWithMockWalletServiceAndConversionRepository(t *testing.T) (*conversion.Service, *mocks.MockWalletService, *mocks.MockConversionRepository) {
+func createServiceWithMockWalletServiceAndConversionRepository(t *testing.T) (conversion.Service, *mocks.MockWalletService, *mocks.MockRepository) {
 	ctrl := gomock.NewController(t)
 	mockWalletService := mocks.NewMockWalletService(ctrl)
-	mockConversionRepo := mocks.NewMockConversionRepository(ctrl)
+	mockConversionRepo := mocks.NewMockRepository(ctrl)
 	return conversion.NewService(mockWalletService, zap.S(), mockConversionRepo), mockWalletService, mockConversionRepo
 }

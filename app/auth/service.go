@@ -10,24 +10,24 @@ import (
 	"time"
 )
 
-type AuthRepository interface {
+type Repository interface {
 	GetUserByUsernameAndPassword(ctx context.Context, username string, password string) (entity.User, error)
 }
-type Service struct {
-	config         config.Jwt
-	authRepository AuthRepository
-	logger         *zap.SugaredLogger
+type service struct {
+	config     config.Jwt
+	repository Repository
+	logger     *zap.SugaredLogger
 }
 
-func NewService(config config.Jwt, repository AuthRepository, logger *zap.SugaredLogger) *Service {
+func NewService(config config.Jwt, repository Repository, logger *zap.SugaredLogger) *service {
 	if repository == nil {
 		return nil
 	}
-	return &Service{config: config, authRepository: repository, logger: logger}
+	return &service{config: config, repository: repository, logger: logger}
 }
 
-func (s *Service) Tokenize(ctx context.Context, credentials LoginRequest) (TokenResponse, error) {
-	user, err := s.authRepository.GetUserByUsernameAndPassword(ctx, credentials.Username, credentials.Password)
+func (s *service) Tokenize(ctx context.Context, credentials LoginRequest) (TokenResponse, error) {
+	user, err := s.repository.GetUserByUsernameAndPassword(ctx, credentials.Username, credentials.Password)
 	if err != nil {
 		return TokenResponse{}, err
 	}
@@ -50,7 +50,7 @@ func (s *Service) Tokenize(ctx context.Context, credentials LoginRequest) (Token
 		AccessToken: tokenString,
 	}, err
 }
-func (s *Service) ValidateToken(_ context.Context, tokenString string) error {
+func (s *service) ValidateToken(_ context.Context, tokenString string) error {
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		&JWTClaim{},
@@ -71,7 +71,7 @@ func (s *Service) ValidateToken(_ context.Context, tokenString string) error {
 	return nil
 }
 
-func (s *Service) ExtractUserIDFromToken(tokenString string) (int, error) {
+func (s *service) ExtractUserIDFromToken(tokenString string) (int, error) {
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		&JWTClaim{},

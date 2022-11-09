@@ -1,5 +1,3 @@
-//go:build unit
-
 package exchange_test
 
 import (
@@ -16,7 +14,7 @@ import (
 )
 
 func TestService_CreateExchangeRate(t *testing.T) {
-	mockExchangeRepository := mocks.NewMockExchangeRepository(gomock.NewController(t))
+	mockExchangeRepository := mocks.NewMockRepository(gomock.NewController(t))
 	service := exchange.NewService(mockExchangeRepository, zap.S())
 
 	t.Run("given not supported currency from then it should return not valid currency error", func(t *testing.T) {

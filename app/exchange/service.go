@@ -8,25 +8,25 @@ import (
 	"time"
 )
 
-type ExchangeRepository interface {
+type Repository interface {
 	IsCurrencyExists(ctx context.Context, currency string) (bool, error)
 	GetExchangeValuesForGivenCurrencies(ctx context.Context, fromCurrency, toCurrency string) (entity.Exchange, error)
 	SetUserActiveExchangeRateOffer(ctx context.Context, offer entity.UserActiveExchangeOffer) (bool, error)
 }
-type Service struct {
-	exchangeRepository ExchangeRepository
-	logger             *zap.SugaredLogger
+type service struct {
+	repository Repository
+	logger     *zap.SugaredLogger
 }
 
-func NewService(repository ExchangeRepository, logger *zap.SugaredLogger) *Service {
-	return &Service{exchangeRepository: repository, logger: logger}
+func NewService(repository Repository, logger *zap.SugaredLogger) *service {
+	return &service{repository: repository, logger: logger}
 }
-func (s *Service) PrepareExchangeRateOffer(ctx context.Context, userID int, request ExchangeRateRequest) (ExchangeRateResponse, error) {
+func (s *service) PrepareExchangeRateOffer(ctx context.Context, userID int, request ExchangeRateRequest) (ExchangeRateResponse, error) {
 	if err := s.checkAreCurrenciesExists(ctx, request); err != nil {
 		s.logger.Debug(err)
 		return ExchangeRateResponse{}, err
 	}
-	exchange, err := s.exchangeRepository.
+	exchange, err := s.repository.
 		GetExchangeValuesForGivenCurrencies(ctx, request.FromCurrency, request.ToCurrency)
 	if err != nil {
 		s.logger.Debug(err)
@@ -36,7 +36,7 @@ func (s *Service) PrepareExchangeRateOffer(ctx context.Context, userID int, requ
 	createdAt := time.Now()
 	expiresAt := createdAt.Add(ExchangeRateExpirationMinutes * time.Minute).Unix()
 
-	exchangeRateOfferSet, err := s.exchangeRepository.SetUserActiveExchangeRateOffer(ctx, entity.UserActiveExchangeOffer{
+	exchangeRateOfferSet, err := s.repository.SetUserActiveExchangeRateOffer(ctx, entity.UserActiveExchangeOffer{
 		UserID:         userID,
 		FromCurrency:   request.FromCurrency,
 		ToCurrency:     request.ToCurrency,
@@ -55,15 +55,15 @@ func (s *Service) PrepareExchangeRateOffer(ctx context.Context, userID int, requ
 		ExpiresAt:    expiresAt,
 	}, nil
 }
-func (s *Service) checkAreCurrenciesExists(ctx context.Context, request ExchangeRateRequest) error {
-	exists, err := s.exchangeRepository.IsCurrencyExists(ctx, request.FromCurrency)
+func (s *service) checkAreCurrenciesExists(ctx context.Context, request ExchangeRateRequest) error {
+	exists, err := s.repository.IsCurrencyExists(ctx, request.FromCurrency)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		return errors.New(NotValidCurrency)
 	}
-	exists, err = s.exchangeRepository.IsCurrencyExists(ctx, request.ToCurrency)
+	exists, err = s.repository.IsCurrencyExists(ctx, request.ToCurrency)
 	if err != nil {
 		return err
 	}

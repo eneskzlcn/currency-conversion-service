@@ -1,5 +1,3 @@
-//go:build unit
-
 package wallet_test
 
 import (
@@ -14,6 +12,11 @@ import (
 	"go.uber.org/zap"
 	"testing"
 )
+
+type HttpHandler interface {
+	RegisterRoutes(app *fiber.App)
+	GetUserWalletAccounts(ctx *fiber.Ctx) error
+}
 
 func TestHandler_GetUserWallets(t *testing.T) {
 	handler, mockWalletService, _ := createHandlerWithMockWalletServiceAndAuthGuard(t)
@@ -77,9 +80,9 @@ func TestHandler_RegisterRoutes(t *testing.T) {
 	testutil.AssertRouteRegistered(t, app, fiber.MethodGet, "/wallets")
 }
 
-func createHandlerWithMockWalletServiceAndAuthGuard(t *testing.T) (*wallet.HttpHandler, *mocks.MockWalletService, *mocks.MockAuthGuard) {
+func createHandlerWithMockWalletServiceAndAuthGuard(t *testing.T) (HttpHandler, *mocks.MockService, *mocks.MockAuthGuard) {
 	ctrl := gomock.NewController(t)
-	mockWalletService := mocks.NewMockWalletService(ctrl)
+	mockWalletService := mocks.NewMockService(ctrl)
 	mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
 	return wallet.NewHttpHandler(mockWalletService, mockAuthGuard, zap.S()), mockWalletService, mockAuthGuard
 }

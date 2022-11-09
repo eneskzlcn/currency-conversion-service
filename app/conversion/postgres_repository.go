@@ -7,16 +7,16 @@ import (
 	"go.uber.org/zap"
 )
 
-type Repository struct {
+type postgresRepository struct {
 	logger *zap.SugaredLogger
 	db     *sql.DB
 }
 
-func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *Repository {
-	return &Repository{db: db, logger: logger}
+func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *postgresRepository {
+	return &postgresRepository{db: db, logger: logger}
 }
 
-func (r *Repository) GetUserActiveExchangeOffer(ctx context.Context,
+func (r *postgresRepository) GetUserActiveExchangeOffer(ctx context.Context,
 	dto UserActiveExchangeOfferDTO) (entity.UserActiveExchangeOffer, error) {
 	query := `
 		SELECT user_id, currency_from, currency_to, exchange_rate, offer_created_at, offer_expires_at

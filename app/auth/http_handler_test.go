@@ -1,5 +1,3 @@
-//go:build unit
-
 package auth_test
 
 import (
@@ -14,6 +12,11 @@ import (
 	"net/http/httptest"
 	"testing"
 )
+
+type HttpHandler interface {
+	RegisterRoutes(app *fiber.App)
+	Login(ctx *fiber.Ctx) error
+}
 
 func TestHandler_Login(t *testing.T) {
 	httpHandler, mockAuthService := createHandlerAndMockAuthService(t)
@@ -57,16 +60,16 @@ func TestHandler_Login(t *testing.T) {
 func TestRegisterRoutesSuccessfullyRegistersTheEndpointsToTheApp(t *testing.T) {
 	app := fiber.New()
 	ctrl := gomock.NewController(t)
-	mockAuthService := mocks.NewMockAuthService(ctrl)
+	mockAuthService := mocks.NewMockService(ctrl)
 	httpHandler := auth.NewHttpHandler(mockAuthService, zap.S())
 	httpHandler.RegisterRoutes(app)
 	resp, err := app.Test(httptest.NewRequest(fiber.MethodPost, "/auth/login", nil))
 	assert.Nil(t, err)
 	assert.NotEqual(t, fiber.StatusNotFound, resp.StatusCode)
 }
-func createHandlerAndMockAuthService(t *testing.T) (*auth.HttpHandler, *mocks.MockAuthService) {
+func createHandlerAndMockAuthService(t *testing.T) (HttpHandler, *mocks.MockService) {
 	ctrl := gomock.NewController(t)
-	mockAuthService := mocks.NewMockAuthService(ctrl)
+	mockAuthService := mocks.NewMockService(ctrl)
 	httpHandler := auth.NewHttpHandler(mockAuthService, zap.S())
 	return httpHandler, mockAuthService
 }

@@ -7,16 +7,16 @@ import (
 	"go.uber.org/zap"
 )
 
-type Repository struct {
+type postgresRepository struct {
 	db     *sql.DB
 	logger *zap.SugaredLogger
 }
 
-func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *Repository {
-	return &Repository{db: db, logger: logger}
+func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *postgresRepository {
+	return &postgresRepository{db: db, logger: logger}
 }
 
-func (r *Repository) IsUserWithUserIDExists(ctx context.Context, userID int) (bool, error) {
+func (r *postgresRepository) IsUserWithUserIDExists(ctx context.Context, userID int) (bool, error) {
 	query := `SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)`
 	row := r.db.QueryRowContext(ctx, query, userID)
 	var exists bool
@@ -26,7 +26,7 @@ func (r *Repository) IsUserWithUserIDExists(ctx context.Context, userID int) (bo
 	return exists, nil
 }
 
-func (r *Repository) GetUserWalletAccounts(ctx context.Context, userID int) ([]entity.UserWallet, error) {
+func (r *postgresRepository) GetUserWalletAccounts(ctx context.Context, userID int) ([]entity.UserWallet, error) {
 	query := `
 		SELECT user_id, currency_code, balance, created_at, updated_at
 		FROM user_wallets uw 
@@ -59,7 +59,7 @@ func (r *Repository) GetUserWalletAccounts(ctx context.Context, userID int) ([]e
 	return userWallets, nil
 }
 
-func (r *Repository) GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error) {
+func (r *postgresRepository) GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error) {
 	query := `SELECT balance FROM user_wallets WHERE user_id = $1 AND currency_code = $2`
 	row := r.db.QueryRowContext(ctx, query, userID, currency)
 	var balance float32
@@ -68,7 +68,7 @@ func (r *Repository) GetUserBalanceOnGivenCurrency(ctx context.Context, userID i
 	}
 	return balance, nil
 }
-func (r *Repository) AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error) {
+func (r *postgresRepository) AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error) {
 	query := `
 	UPDATE user_wallets 
 	SET balance = balance + $1 

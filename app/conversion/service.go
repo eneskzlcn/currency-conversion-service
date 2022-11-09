@@ -12,22 +12,22 @@ type WalletService interface {
 	GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error)
 	AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error)
 }
-type ConversionRepository interface {
+type Repository interface {
 	GetUserActiveExchangeOffer(ctx context.Context, dto UserActiveExchangeOfferDTO) (entity.UserActiveExchangeOffer, error)
 }
-type Service struct {
+type service struct {
 	walletService WalletService
 	logger        *zap.SugaredLogger
-	repository    ConversionRepository
+	repository    Repository
 }
 
-func NewService(walletService WalletService, logger *zap.SugaredLogger, repository ConversionRepository) *Service {
+func NewService(walletService WalletService, logger *zap.SugaredLogger, repository Repository) *service {
 	if walletService == nil {
 		return nil
 	}
-	return &Service{walletService: walletService, logger: logger, repository: repository}
+	return &service{walletService: walletService, logger: logger, repository: repository}
 }
-func (s *Service) ConvertCurrencies(ctx context.Context, userID int, request CurrencyConversionOfferRequest) (bool, error) {
+func (s *service) ConvertCurrencies(ctx context.Context, userID int, request CurrencyConversionOfferRequest) (bool, error) {
 	if err := s.checkExchangeOfferSameWithTheUserActiveExchangeOffer(ctx, userID, request); err != nil {
 		s.logger.Debug(err)
 		return false, err
@@ -53,7 +53,7 @@ func (s *Service) ConvertCurrencies(ctx context.Context, userID int, request Cur
 	}
 	return true, nil
 }
-func (s *Service) checkExchangeOfferSameWithTheUserActiveExchangeOffer(ctx context.Context, userID int, request CurrencyConversionOfferRequest) error {
+func (s *service) checkExchangeOfferSameWithTheUserActiveExchangeOffer(ctx context.Context, userID int, request CurrencyConversionOfferRequest) error {
 	userActiveExchangeOffer, err := s.repository.GetUserActiveExchangeOffer(ctx, UserActiveExchangeOfferDTO{
 		UserID:       userID,
 		FromCurrency: request.FromCurrency,
@@ -69,10 +69,10 @@ func (s *Service) checkExchangeOfferSameWithTheUserActiveExchangeOffer(ctx conte
 	}
 	return nil
 }
-func (s *Service) isCurrencyConversionOfferExpired(expiresAtUnix int64) bool {
+func (s *service) isCurrencyConversionOfferExpired(expiresAtUnix int64) bool {
 	return expiresAtUnix < time.Now().Local().Unix()
 }
-func (s *Service) isUserHasEnoughBalanceToMakeConversion(ctx context.Context, userID int, currency string, conversionBalance float32) (bool, error) {
+func (s *service) isUserHasEnoughBalanceToMakeConversion(ctx context.Context, userID int, currency string, conversionBalance float32) (bool, error) {
 	userBalanceInCurrencyFrom, err := s.walletService.
 		GetUserBalanceOnGivenCurrency(ctx, userID, currency)
 	if err != nil {
@@ -83,7 +83,7 @@ func (s *Service) isUserHasEnoughBalanceToMakeConversion(ctx context.Context, us
 	}
 	return true, nil
 }
-func (s *Service) updateUserWalletBalancesByConversion(ctx context.Context, userID int, request CurrencyConversionOfferRequest) error {
+func (s *service) updateUserWalletBalancesByConversion(ctx context.Context, userID int, request CurrencyConversionOfferRequest) error {
 	fromCurrencyBalanceAdjustAmount := -1 * request.Balance
 	toCurrencyBalanceAdjustAmount := request.Balance * request.ExchangeRate
 

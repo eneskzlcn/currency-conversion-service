@@ -7,22 +7,23 @@ import (
 	"go.uber.org/zap"
 )
 
-type Repository struct {
+type postgresRepository struct {
 	db     *sql.DB
 	logger *zap.SugaredLogger
 }
 
-func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *Repository {
-	return &Repository{db: db, logger: logger}
+func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *postgresRepository {
+	return &postgresRepository{db: db, logger: logger}
 }
-func (r *Repository) IsCurrencyExists(ctx context.Context, currency string) (bool, error) {
+func (r *postgresRepository) IsCurrencyExists(ctx context.Context, currency string) (bool, error) {
 	query := `SELECT EXISTS ( SELECT 1 FROM currencies WHERE code = $1)`
 	row := r.db.QueryRowContext(ctx, query, currency)
 	var isExists bool
 	err := row.Scan(&isExists)
 	return isExists, err
 }
-func (r *Repository) GetExchangeValuesForGivenCurrencies(ctx context.Context, fromCurrency, toCurrency string) (entity.Exchange, error) {
+func (r *postgresRepository) GetExchangeValuesForGivenCurrencies(ctx context.Context,
+	fromCurrency, toCurrency string) (entity.Exchange, error) {
 	query := `
 		SELECT currency_from, currency_to, exchange_rate, markup_rate, created_at, updated_at
 		FROM exchanges e WHERE currency_from = $1 AND currency_to = $2`
@@ -41,7 +42,7 @@ func (r *Repository) GetExchangeValuesForGivenCurrencies(ctx context.Context, fr
 	}
 	return exchange, nil
 }
-func (r *Repository) SetUserActiveExchangeRateOffer(ctx context.Context, offer entity.UserActiveExchangeOffer) (bool, error) {
+func (r *postgresRepository) SetUserActiveExchangeRateOffer(ctx context.Context, offer entity.UserActiveExchangeOffer) (bool, error) {
 	query := `
 	INSERT INTO user_active_exchange_offers(user_id, 
 	currency_from, currency_to, exchange_rate, offer_created_at, offer_expires_at)

@@ -1,5 +1,3 @@
-//go:build unit
-
 package conversion_test
 
 import (
@@ -16,6 +14,11 @@ import (
 	"testing"
 	"time"
 )
+
+type HttpHandler interface {
+	CurrencyConversionOffer(ctx *fiber.Ctx) error
+	RegisterRoutes(app *fiber.App)
+}
 
 func TestHandler_ConvertCurrencies(t *testing.T) {
 	httpHandler, mockConversionService, _ := createHandlerWithMockConversionServiceAndAuthGuard(t)
@@ -102,9 +105,9 @@ func TestHandler_RegisterRoutes(t *testing.T) {
 	testutil.AssertRouteRegistered(t, app, fiber.MethodPost, "/conversion/offer")
 
 }
-func createHandlerWithMockConversionServiceAndAuthGuard(t *testing.T) (*conversion.HttpHandler, *mocks.MockConversionService, *mocks.MockAuthGuard) {
+func createHandlerWithMockConversionServiceAndAuthGuard(t *testing.T) (HttpHandler, *mocks.MockService, *mocks.MockAuthGuard) {
 	ctrl := gomock.NewController(t)
-	mockConversionService := mocks.NewMockConversionService(ctrl)
+	mockConversionService := mocks.NewMockService(ctrl)
 	mockAuthGuard := mocks.NewMockAuthGuard(ctrl)
 	return conversion.NewHttpHandler(mockConversionService, mockAuthGuard, zap.S()),
 		mockConversionService, mockAuthGuard

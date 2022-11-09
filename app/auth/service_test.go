@@ -1,5 +1,3 @@
-//go:build unit
-
 package auth_test
 
 import (
@@ -124,7 +122,7 @@ func TestService_ExtractUserIDFromToken(t *testing.T) {
 	})
 }
 
-func newAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (*auth.Service, *mocks.MockAuthRepository) {
+func newAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (auth.Service, *mocks.MockAuthRepository) {
 	givenConfig := config.Jwt{
 		ATPrivateKey:        "private",
 		ATExpirationMinutes: 200,
@@ -133,7 +131,7 @@ func newAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (*auth.Service, *m
 	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
 	return auth.NewService(givenConfig, mockAuthRepository, zap.S()), mockAuthRepository
 }
-func newAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (*auth.Service, *mocks.MockAuthRepository) {
+func newAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (auth.Service, *mocks.MockAuthRepository) {
 	ctrl := gomock.NewController(t)
 	MockAuthRepository := mocks.NewMockAuthRepository(ctrl)
 	return auth.NewService(config, MockAuthRepository, zap.S()), MockAuthRepository

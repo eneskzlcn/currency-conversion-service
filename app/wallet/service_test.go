@@ -1,5 +1,3 @@
-//go:build unit
-
 package wallet_test
 
 import (
@@ -13,6 +11,13 @@ import (
 	"go.uber.org/zap"
 	"testing"
 )
+
+type Service interface {
+	AdjustUserBalanceOnGivenCurrency(ctx context.Context,
+		userID int, currency string, balance float32) (bool, error)
+	GetUserWalletAccounts(ctx context.Context, userID int) (wallet.UserWalletAccountsResponse, error)
+	GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error)
+}
 
 func TestService_GetUserWalletAccounts(t *testing.T) {
 	service, mockWalletRepo := createServiceWithMockWalletRepository(t)
@@ -113,8 +118,8 @@ func TestService_AdjustUserBalanceOnGivenCurrency(t *testing.T) {
 	})
 }
 
-func createServiceWithMockWalletRepository(t *testing.T) (*wallet.Service, *mocks.MockWalletRepository) {
+func createServiceWithMockWalletRepository(t *testing.T) (Service, *mocks.MockRepository) {
 	ctrl := gomock.NewController(t)
-	mockWalletRepo := mocks.NewMockWalletRepository(ctrl)
+	mockWalletRepo := mocks.NewMockRepository(ctrl)
 	return wallet.NewService(mockWalletRepo, zap.S()), mockWalletRepo
 }

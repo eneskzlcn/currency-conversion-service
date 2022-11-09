@@ -6,13 +6,13 @@ import (
 	"go.uber.org/zap"
 )
 
-type HttpHandler struct {
-	authService AuthService
-	logger      *zap.SugaredLogger
+type httpHandler struct {
+	service Service
+	logger  *zap.SugaredLogger
 }
 
-func NewHttpHandler(service AuthService, logger *zap.SugaredLogger) *HttpHandler {
-	return &HttpHandler{authService: service, logger: logger}
+func NewHttpHandler(service Service, logger *zap.SugaredLogger) *httpHandler {
+	return &httpHandler{service: service, logger: logger}
 }
 
 // Login godoc
@@ -27,13 +27,13 @@ func NewHttpHandler(service AuthService, logger *zap.SugaredLogger) *HttpHandler
 // @Failure 404
 // @Failure 500
 // @Router /auth/login [post]
-func (h *HttpHandler) Login(ctx *fiber.Ctx) error {
+func (h *httpHandler) Login(ctx *fiber.Ctx) error {
 	h.logger.Info("New login request arrived")
 	var request LoginRequest
 	if err := ctx.BodyParser(&request); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(httperror.NewBadRequestError(err.Error()))
 	}
-	tokenResponse, err := h.authService.Tokenize(ctx.Context(), request)
+	tokenResponse, err := h.service.Tokenize(ctx.Context(), request)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).
 			JSON(httperror.NewInternalServerError(err.Error()))
@@ -43,7 +43,7 @@ func (h *HttpHandler) Login(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(tokenResponse)
 }
 
-func (h *HttpHandler) RegisterRoutes(app *fiber.App) {
+func (h *httpHandler) RegisterRoutes(app *fiber.App) {
 	appGroup := app.Group("/auth")
 	appGroup.Post("/login", h.Login)
 }
