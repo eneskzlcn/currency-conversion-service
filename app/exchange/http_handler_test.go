@@ -11,12 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"testing"
-	"time"
 )
 
 type HttpHandler interface {
 	RegisterRoutes(app *fiber.App)
-	GetExchangeRate(ctx *fiber.Ctx) error
+	GetExchangeRateOffer(ctx *fiber.Ctx) error
 }
 
 func TestHandler_RegisterRoutes(t *testing.T) {
@@ -38,7 +37,7 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 	}
 	t.Run("given not valid exchange rate request then it should return bad request", func(t *testing.T) {
 		app := fiber.New()
-		app.Get("/rate", httpHandler.GetExchangeRate)
+		app.Get("/rate", httpHandler.GetExchangeRateOffer)
 		givenRequest := "notvalidexchangerate"
 		req := testutil.MakeTestRequestWithBody(fiber.MethodGet, "/rate", givenRequest)
 		resp, err := app.Test(req)
@@ -47,7 +46,7 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 	})
 	t.Run("given valid exchange rate request but unexpected error occurred on service then return status internal server error", func(t *testing.T) {
 		app := fiber.New()
-		app.Get("/rate", mockAuthMiddleware(httpHandler.GetExchangeRate))
+		app.Get("/rate", mockAuthMiddleware(httpHandler.GetExchangeRateOffer))
 		givenRequest := exchange.ExchangeRateRequest{
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
@@ -63,17 +62,13 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 	})
 	t.Run("given valid exchange rate then it should return exchange rate response with status created", func(t *testing.T) {
 		app := fiber.New()
-		app.Get("/rate", mockAuthMiddleware(httpHandler.GetExchangeRate))
+		app.Get("/rate", mockAuthMiddleware(httpHandler.GetExchangeRateOffer))
 		givenRequest := exchange.ExchangeRateRequest{
 			FromCurrency: "TRY",
 			ToCurrency:   "USD",
 		}
 		expectedResponse := exchange.ExchangeRateResponse{
-			FromCurrency: "TRY",
-			ToCurrency:   "USD",
-			ExchangeRate: 0.23,
-			CreatedAt:    time.Now(),
-			ExpiresAt:    time.Now().Add(exchange.ExchangeRateExpirationMinutes * time.Minute).Unix(),
+			ExchangeRateOfferID: 2,
 		}
 		mockExchangeService.EXPECT().PrepareExchangeRateOffer(gomock.Any(), gomock.Any(), givenRequest).
 			Return(expectedResponse, nil)

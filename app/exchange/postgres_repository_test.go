@@ -41,11 +41,11 @@ func TestRepository_GetExchangeValuesForGivenCurrencies(t *testing.T) {
 	repository := exchange.NewRepository(db, zap.S())
 	query := regexp.QuoteMeta(`
 		SELECT currency_from, currency_to, exchange_rate, markup_rate, created_at, updated_at
-		FROM exchanges e WHERE currency_from = $1 AND currency_to = $2`)
+		FROM currency_exchange_values WHERE currency_from = $1 AND currency_to = $2`)
 	t.Run("given existing currencies then it should return exchange", func(t *testing.T) {
 		givenCurrencyFrom := "TRY"
 		givenCurrencyTo := "USD"
-		expectedExchange := entity.Exchange{
+		expectedExchange := entity.CurrencyExchangeValues{
 			FromCurrency: givenCurrencyFrom,
 			ToCurrency:   givenCurrencyTo,
 			ExchangeRate: 12.3,
@@ -83,38 +83,27 @@ func TestRepository_GetExchangeValuesForGivenCurrencies(t *testing.T) {
 func TestRepository_SetUserActiveExchangeRateOffer(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
 	repository := exchange.NewRepository(db, zap.S())
-	query := regexp.QuoteMeta(`INSERT INTO user_active_exchange_offers(user_id, 
+	query := regexp.QuoteMeta(`INSERT INTO user_exchange_offers(user_id, 
 	currency_from, currency_to, exchange_rate, offer_created_at, offer_expires_at)
 	VALUES ($1, $2, $3, $4, $5, $6) 
-	ON CONFLICT(user_id, currency_from, currency_To) DO
-	UPDATE SET exchange_rate = $4, offer_created_at = $5, offer_expires_at = $6`)
+	RETURNING id;`)
 
 	t.Run("given existing user, and currencies then it should create if not exists or update active exchange offer", func(t *testing.T) {
-		offer := entity.UserActiveExchangeOffer{
-			UserID:         2,
-			FromCurrency:   "TRY",
-			ToCurrency:     "USD",
-			ExchangeRate:   2.2,
-			OfferCreatedAt: time.Now(),
-			OfferExpiresAt: 12312412414,
-		}
-		sqlmock.ExpectQuery(query).WillReturnRows(sqlmock.NewRows([]string{}))
-		success, err := repository.SetUserActiveExchangeRateOffer(context.TODO(), offer)
+		givenCreateExchangeRateOfferDTO := exchange.NewCreateExchangeRateOfferDTO(2,
+			"TRY", "USD", 2.2, time.Now(), 12312412414)
+		expectedCreatedOfferID := 2
+		sqlmock.ExpectQuery(query).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(expectedCreatedOfferID))
+		createdID, err := repository.CreateExchangeRateOffer(context.TODO(), givenCreateExchangeRateOfferDTO)
 		assert.Nil(t, err)
-		assert.True(t, success)
+		assert.Equal(t, expectedCreatedOfferID, createdID)
 	})
 	t.Run("given not existing user or currencies then it should return false with error", func(t *testing.T) {
-		offer := entity.UserActiveExchangeOffer{
-			UserID:         -1,
-			FromCurrency:   "",
-			ToCurrency:     "",
-			ExchangeRate:   2.2,
-			OfferCreatedAt: time.Now(),
-			OfferExpiresAt: 12312412414,
-		}
+		givenCreateExchangeRateOfferDTO := exchange.NewCreateExchangeRateOfferDTO(-1,
+			"", "", 2.2, time.Now(), 12312412414)
 		sqlmock.ExpectQuery(query).WillReturnError(errors.New("not existing user or currency"))
-		success, err := repository.SetUserActiveExchangeRateOffer(context.TODO(), offer)
+		expectedCreatedOfferID := -1
+		createdExchangeRateOfferID, err := repository.CreateExchangeRateOffer(context.TODO(), givenCreateExchangeRateOfferDTO)
 		assert.NotNil(t, err)
-		assert.False(t, success)
+		assert.Equal(t, expectedCreatedOfferID, createdExchangeRateOfferID)
 	})
 }

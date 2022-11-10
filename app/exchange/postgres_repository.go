@@ -23,13 +23,13 @@ func (r *postgresRepository) IsCurrencyExists(ctx context.Context, currency stri
 	return isExists, err
 }
 func (r *postgresRepository) GetExchangeValuesForGivenCurrencies(ctx context.Context,
-	fromCurrency, toCurrency string) (entity.Exchange, error) {
+	fromCurrency, toCurrency string) (entity.CurrencyExchangeValues, error) {
 	query := `
 		SELECT currency_from, currency_to, exchange_rate, markup_rate, created_at, updated_at
-		FROM exchanges e WHERE currency_from = $1 AND currency_to = $2`
+		FROM currency_exchange_values WHERE currency_from = $1 AND currency_to = $2`
 
 	row := r.db.QueryRowContext(ctx, query, fromCurrency, toCurrency)
-	var exchange entity.Exchange
+	var exchange entity.CurrencyExchangeValues
 	err := row.Scan(&exchange.FromCurrency,
 		&exchange.ToCurrency,
 		&exchange.ExchangeRate,
@@ -38,22 +38,19 @@ func (r *postgresRepository) GetExchangeValuesForGivenCurrencies(ctx context.Con
 		&exchange.UpdatedAt,
 	)
 	if err != nil {
-		return entity.Exchange{}, err
+		return entity.CurrencyExchangeValues{}, err
 	}
 	return exchange, nil
 }
-func (r *postgresRepository) SetUserActiveExchangeRateOffer(ctx context.Context, offer entity.UserActiveExchangeOffer) (bool, error) {
+func (r *postgresRepository) CreateExchangeRateOffer(ctx context.Context, dto CreateExchangeRateOfferDTO) (int, error) {
 	query := `
-	INSERT INTO user_active_exchange_offers(user_id, 
+	INSERT INTO user_exchange_offers(user_id, 
 	currency_from, currency_to, exchange_rate, offer_created_at, offer_expires_at)
-	VALUES ($1, $2, $3, $4, $5, $6) 
-	ON CONFLICT(user_id, currency_from, currency_To) DO
-	UPDATE SET exchange_rate = $4, offer_created_at = $5, offer_expires_at = $6
-	`
-	row := r.db.QueryRowContext(ctx, query, offer.UserID,
-		offer.FromCurrency, offer.ToCurrency, offer.ExchangeRate, offer.OfferCreatedAt, offer.OfferExpiresAt)
-	if err := row.Err(); err != nil {
-		return false, err
-	}
-	return true, nil
+	VALUES ($1, $2, $3, $4, $5, $6)
+	RETURNING id;`
+	row := r.db.QueryRowContext(ctx, query, dto.UserID(), dto.FromCurrency(),
+		dto.ToCurrency(), dto.ExchangeRate(), dto.OfferCreatedAt(), dto.OfferExpiresAt())
+	var createdExchangeRateOfferID = -1
+	err := row.Scan(&createdExchangeRateOfferID)
+	return createdExchangeRateOfferID, err
 }

@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS currencies (
     code VARCHAR NOT NULL PRIMARY KEY
 );
 
-CREATE TABLE IF NOT EXISTS exchanges(
+CREATE TABLE IF NOT EXISTS currency_exchange_values(
     currency_from VARCHAR NOT NULL REFERENCES currencies ON DELETE CASCADE ON UPDATE CASCADE,
     currency_to VARCHAR NOT NULL REFERENCES currencies ON DELETE CASCADE ON UPDATE CASCADE,
     exchange_rate FLOAT NOT NULL,
@@ -29,22 +29,22 @@ CREATE TABLE IF NOT EXISTS user_wallets(
     PRIMARY KEY (user_id, currency_code)
 );
 
-CREATE TABLE IF NOT EXISTS user_active_exchange_offers(
+CREATE TABLE IF NOT EXISTS user_exchange_offers(
+    id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     user_id INTEGER REFERENCES users ON DELETE CASCADE ON UPDATE CASCADE,
     currency_from VARCHAR NOT NULL REFERENCES currencies ON DELETE CASCADE ON UPDATE CASCADE,
     currency_to VARCHAR NOT NULL REFERENCES currencies ON DELETE CASCADE ON UPDATE CASCADE,
     exchange_rate FLOAT NOT NULL,
     offer_created_at TIMESTAMP NOT NULL,
-    offer_expires_at INT NOT NULL,
-    PRIMARY KEY(user_id, currency_from, currency_to)
+    offer_expires_at INT NOT NULL
 );
 INSERT INTO currencies (code) VALUES ('TRY');
 INSERT INTO currencies (code) VALUES ('USD');
 
-INSERT INTO exchanges (currency_from, currency_to, exchange_rate, markup_rate)
+INSERT INTO currency_exchange_values (currency_from, currency_to, exchange_rate, markup_rate)
 VALUES ('TRY', 'USD', 1.40, 0.2);
 
-INSERT INTO exchanges (currency_from, currency_to, exchange_rate,markup_rate)
+INSERT INTO currency_exchange_values (currency_from, currency_to, exchange_rate,markup_rate)
 VALUES ('USD', 'TRY', 16.00, 0.3);
 
 INSERT INTO users (username, password) VALUES ('eneskzlcn', 'eneskzlcn');

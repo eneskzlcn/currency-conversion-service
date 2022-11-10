@@ -10,8 +10,8 @@ import (
 
 type Repository interface {
 	IsCurrencyExists(ctx context.Context, currency string) (bool, error)
-	GetExchangeValuesForGivenCurrencies(ctx context.Context, fromCurrency, toCurrency string) (entity.Exchange, error)
-	SetUserActiveExchangeRateOffer(ctx context.Context, offer entity.UserActiveExchangeOffer) (bool, error)
+	GetExchangeValuesForGivenCurrencies(ctx context.Context, fromCurrency, toCurrency string) (entity.CurrencyExchangeValues, error)
+	CreateExchangeRateOffer(ctx context.Context, dto CreateExchangeRateOfferDTO) (int, error)
 }
 type service struct {
 	repository Repository
@@ -26,34 +26,17 @@ func (s *service) PrepareExchangeRateOffer(ctx context.Context, userID int, requ
 		s.logger.Debug(err)
 		return ExchangeRateResponse{}, err
 	}
-	exchange, err := s.repository.
+	exchangeValues, err := s.repository.
 		GetExchangeValuesForGivenCurrencies(ctx, request.FromCurrency, request.ToCurrency)
 	if err != nil {
 		s.logger.Debug(err)
 		return ExchangeRateResponse{}, err
 	}
-	exchangeRateOfferFeedWithMarkupRate := exchange.ExchangeRate + exchange.MarkupRate
-	createdAt := time.Now()
-	expiresAt := createdAt.Add(ExchangeRateExpirationMinutes * time.Minute).Unix()
-
-	exchangeRateOfferSet, err := s.repository.SetUserActiveExchangeRateOffer(ctx, entity.UserActiveExchangeOffer{
-		UserID:         userID,
-		FromCurrency:   request.FromCurrency,
-		ToCurrency:     request.ToCurrency,
-		ExchangeRate:   exchangeRateOfferFeedWithMarkupRate,
-		OfferCreatedAt: createdAt,
-		OfferExpiresAt: expiresAt,
-	})
-	if err != nil || !exchangeRateOfferSet {
+	createdExchangeRateOfferID, err := s.createExchangeRateOffer(ctx, userID, exchangeValues)
+	if err != nil {
 		return ExchangeRateResponse{}, err
 	}
-	return ExchangeRateResponse{
-		FromCurrency: exchange.FromCurrency,
-		ToCurrency:   exchange.ToCurrency,
-		ExchangeRate: exchangeRateOfferFeedWithMarkupRate,
-		CreatedAt:    createdAt,
-		ExpiresAt:    expiresAt,
-	}, nil
+	return ExchangeRateResponse{ExchangeRateOfferID: createdExchangeRateOfferID}, nil
 }
 func (s *service) checkAreCurrenciesExists(ctx context.Context, request ExchangeRateRequest) error {
 	exists, err := s.repository.IsCurrencyExists(ctx, request.FromCurrency)
@@ -71,4 +54,13 @@ func (s *service) checkAreCurrenciesExists(ctx context.Context, request Exchange
 		return errors.New(NotValidCurrency)
 	}
 	return nil
+}
+func (s *service) createExchangeRateOffer(ctx context.Context, userID int, exchangeValues entity.CurrencyExchangeValues) (int, error) {
+	exchangeRateOfferFeedWithMarkupRate := exchangeValues.ExchangeRate + exchangeValues.MarkupRate
+	createdAt := time.Now()
+	expiresAt := createdAt.Add(ExchangeRateExpirationMinutes * time.Minute).Unix()
+	createExchangeRateOfferDTO := NewCreateExchangeRateOfferDTO(userID, exchangeValues.FromCurrency,
+		exchangeValues.ToCurrency, exchangeRateOfferFeedWithMarkupRate, createdAt, expiresAt)
+
+	return s.repository.CreateExchangeRateOffer(ctx, createExchangeRateOfferDTO)
 }

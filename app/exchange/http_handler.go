@@ -14,6 +14,7 @@ type Service interface {
 type AuthGuard interface {
 	ProtectWithJWT(handler fiber.Handler) fiber.Handler
 }
+
 type httpHandler struct {
 	service   Service
 	authGuard AuthGuard
@@ -37,8 +38,8 @@ func NewHttpHandler(service Service, guard AuthGuard, logger *zap.SugaredLogger)
 //@Failure 401 {string} string "Unauthorized"
 //@Failure 404
 //@Failure 500 {object} httperror.HttpError
-//@Router /exchange/rate [get]
-func (h *httpHandler) GetExchangeRate(ctx *fiber.Ctx) error {
+//@Router /exchange/rate [post]
+func (h *httpHandler) GetExchangeRateOffer(ctx *fiber.Ctx) error {
 	userID, exists := ctx.Locals(common.USER_ID_CTX_KEY).(int)
 	h.logger.Info("Exchange Rate Offer Request Arrived. User ID: %d", userID)
 	if !exists {
@@ -54,7 +55,8 @@ func (h *httpHandler) GetExchangeRate(ctx *fiber.Ctx) error {
 	}
 	return ctx.Status(fiber.StatusCreated).JSON(exchangeRate)
 }
+
 func (h *httpHandler) RegisterRoutes(app *fiber.App) {
 	appGroup := app.Group("/exchange")
-	appGroup.Get("/rate", h.authGuard.ProtectWithJWT(h.GetExchangeRate))
+	appGroup.Post("/rate", h.authGuard.ProtectWithJWT(h.GetExchangeRateOffer))
 }

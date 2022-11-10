@@ -20,7 +20,7 @@ func (r *postgresRepository) GetUserActiveExchangeOffer(ctx context.Context,
 	dto UserActiveExchangeOfferDTO) (entity.UserActiveExchangeOffer, error) {
 	query := `
 		SELECT user_id, currency_from, currency_to, exchange_rate, offer_created_at, offer_expires_at
-		FROM user_active_exchange_offers
+		FROM user_exchange_offers
 		WHERE user_id = $1 AND currency_from = $2 AND currency_to = $3`
 	row := r.db.QueryRowContext(ctx, query, dto.UserID, dto.FromCurrency, dto.ToCurrency)
 	var offer entity.UserActiveExchangeOffer
