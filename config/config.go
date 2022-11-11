@@ -6,25 +6,11 @@ import (
 )
 
 type Config struct {
-	Db     DB
-	Server Server
-	Jwt    Jwt
-	AppEnv string
-}
-
-type DB struct {
-	Username string
-	Password string
-	DBName   string
-	Host     string
-	Port     string
-}
-type Jwt struct {
-	ATPrivateKey        string
-	ATExpirationMinutes int
-}
-type Server struct {
-	Port string
+	Db       DB
+	Server   Server
+	Jwt      Jwt
+	AppEnv   string
+	Rabbitmq RabbitMQ
 }
 
 func New() *Config {
@@ -58,6 +44,14 @@ func New() *Config {
 		DBName:   viper.GetString("DB_NAME"),
 		Host:     viper.GetString("DB_HOST"),
 		Port:     viper.GetString("DB_PORT"),
+	}
+
+	config.Rabbitmq = RabbitMQ{
+		Username:               viper.GetString("RABBITMQ_USERNAME"),
+		Password:               viper.GetString("RABBITMQ_PASSWORD"),
+		Host:                   viper.GetString("RABBITMQ_HOST"),
+		Port:                   viper.GetString("RABBITMQ_PORT"),
+		CurrencyConvertedQueue: viper.GetString("RABBITMQ_CURRENCY_CONVERTED_QUEUE"),
 	}
 	return config
 }

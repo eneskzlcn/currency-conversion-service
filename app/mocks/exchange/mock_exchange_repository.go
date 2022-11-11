@@ -8,8 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	entity "github.com/eneskzlcn/currency-conversion-service/app/entity"
 	exchange "github.com/eneskzlcn/currency-conversion-service/app/exchange"
+	model "github.com/eneskzlcn/currency-conversion-service/app/model"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -52,10 +52,10 @@ func (mr *MockRepositoryMockRecorder) CreateExchangeRateOffer(arg0, arg1 interfa
 }
 
 // GetExchangeValuesForGivenCurrencies mocks base method.
-func (m *MockRepository) GetExchangeValuesForGivenCurrencies(arg0 context.Context, arg1, arg2 string) (entity.CurrencyExchangeValues, error) {
+func (m *MockRepository) GetExchangeValuesForGivenCurrencies(arg0 context.Context, arg1, arg2 string) (model.CurrencyExchangeValues, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetExchangeValuesForGivenCurrencies", arg0, arg1, arg2)
-	ret0, _ := ret[0].(entity.CurrencyExchangeValues)
+	ret0, _ := ret[0].(model.CurrencyExchangeValues)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

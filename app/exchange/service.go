@@ -3,14 +3,14 @@ package exchange
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"go.uber.org/zap"
 	"time"
 )
 
 type Repository interface {
 	IsCurrencyExists(ctx context.Context, currency string) (bool, error)
-	GetExchangeValuesForGivenCurrencies(ctx context.Context, fromCurrency, toCurrency string) (entity.CurrencyExchangeValues, error)
+	GetExchangeValuesForGivenCurrencies(ctx context.Context, fromCurrency, toCurrency string) (model.CurrencyExchangeValues, error)
 	CreateExchangeRateOffer(ctx context.Context, dto CreateExchangeRateOfferDTO) (int, error)
 }
 type service struct {
@@ -55,7 +55,7 @@ func (s *service) checkAreCurrenciesExists(ctx context.Context, request Exchange
 	}
 	return nil
 }
-func (s *service) createExchangeRateOffer(ctx context.Context, userID int, exchangeValues entity.CurrencyExchangeValues) (int, error) {
+func (s *service) createExchangeRateOffer(ctx context.Context, userID int, exchangeValues model.CurrencyExchangeValues) (int, error) {
 	exchangeRateOfferFeedWithMarkupRate := exchangeValues.ExchangeRate + exchangeValues.MarkupRate
 	createdAt := time.Now()
 	expiresAt := createdAt.Add(ExchangeRateExpirationMinutes * time.Minute).Unix()

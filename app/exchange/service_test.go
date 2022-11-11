@@ -3,9 +3,9 @@ package exchange_test
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	"github.com/eneskzlcn/currency-conversion-service/app/exchange"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/exchange"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -52,7 +52,7 @@ func TestService_CreateExchangeRate(t *testing.T) {
 		mockExchangeRepository.EXPECT().
 			GetExchangeValuesForGivenCurrencies(gomock.Any(),
 				givenRequest.FromCurrency, givenRequest.ToCurrency).
-			Return(entity.CurrencyExchangeValues{}, errors.New("exchange not found"))
+			Return(model.CurrencyExchangeValues{}, errors.New("exchange not found"))
 
 		exchangeDateResp, err := service.PrepareExchangeRateOffer(context.Background(), 1, givenRequest)
 		assert.NotNil(t, err)
@@ -60,7 +60,7 @@ func TestService_CreateExchangeRate(t *testing.T) {
 	})
 	t.Run("given supported currency values and exchange values taken then it should return exchange rate response", func(t *testing.T) {
 		givenRequest := exchange.ExchangeRateRequest{FromCurrency: "TRY", ToCurrency: "USD"}
-		givenExchange := entity.CurrencyExchangeValues{
+		givenExchange := model.CurrencyExchangeValues{
 			FromCurrency: givenRequest.FromCurrency,
 			ToCurrency:   givenRequest.ToCurrency,
 			ExchangeRate: 2.3,

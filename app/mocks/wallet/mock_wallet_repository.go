@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	entity "github.com/eneskzlcn/currency-conversion-service/app/entity"
+	model "github.com/eneskzlcn/currency-conversion-service/app/model"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -66,10 +66,10 @@ func (mr *MockRepositoryMockRecorder) GetUserBalanceOnGivenCurrency(arg0, arg1, 
 }
 
 // GetUserWalletAccounts mocks base method.
-func (m *MockRepository) GetUserWalletAccounts(arg0 context.Context, arg1 int) ([]entity.UserWallet, error) {
+func (m *MockRepository) GetUserWalletAccounts(arg0 context.Context, arg1 int) ([]model.UserWallet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserWalletAccounts", arg0, arg1)
-	ret0, _ := ret[0].([]entity.UserWallet)
+	ret0, _ := ret[0].([]model.UserWallet)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

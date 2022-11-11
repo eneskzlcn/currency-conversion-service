@@ -8,7 +8,7 @@ start:
 	swag init && go build -o bin/currency-conversion  && ./bin/currency-conversion
 
 clean:
-	rm -rf bin && rm -rf app/mocks && rm -rf postgres_migrate && rm -rf postgres_drop && rm -rf unit_covarage.out && clear
+	rm -rf bin && rm -rf app/mocks && rm -rf postgres_migrate && rm -rf postgres_drop && rm -rf unit_coverage.out && clear
 
 unit-tests:
 	go test -v ./... -coverprofile=unit_coverage.out -short -tags=unit
@@ -33,6 +33,7 @@ generate-mocks:
 	mockgen -destination=app/mocks/conversion/mock_conversion_service.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion Service
 	mockgen -destination=app/mocks/conversion/mock_auth_guard.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion AuthGuard
 	mockgen -destination=app/mocks/conversion/mock_wallet_service.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion WalletService
+	mockgen -destination=app/mocks/conversion/mock_rabbitmq_producer.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion RabbitmqProducer
 	mockgen -destination=app/mocks/conversion/mock_conversion_repository.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion Repository
 	mockgen -destination=app/mocks/wallet/mock_wallet_service.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/wallet Service
 	mockgen -destination=app/mocks/wallet/mock_auth_guard.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/wallet AuthGuard

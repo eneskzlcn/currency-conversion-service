@@ -1,8 +1,9 @@
-package entity
+package model
 
 import "time"
 
-type UserActiveExchangeOffer struct {
+type ExchangeRateOffer struct {
+	ID             int
 	UserID         int
 	FromCurrency   string
 	ToCurrency     string

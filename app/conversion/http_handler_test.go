@@ -12,7 +12,6 @@ import (
 	"go.uber.org/zap"
 	"strconv"
 	"testing"
-	"time"
 )
 
 type HttpHandler interface {
@@ -33,13 +32,10 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 	t.Run("given conversion offer request but userID not in context then it should return status bad request", func(t *testing.T) {
 		app := fiber.New()
 		app.Post(route, httpHandler.CurrencyConversionOffer)
+		givenExchangeRateOfferID := 2
 		givenOfferRequest := conversion.CurrencyConversionOfferRequest{
-			FromCurrency: "TRY",
-			ToCurrency:   "USD",
-			ExchangeRate: 2.30,
-			CreatedAt:    time.Now(),
-			ExpiresAt:    time.Now().Add(3 * time.Minute).Unix(),
-			Balance:      200,
+			ExchangeRateOfferID: givenExchangeRateOfferID,
+			Balance:             200,
 		}
 		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		resp, err := app.Test(req)
@@ -59,13 +55,10 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 	t.Run("given conversion offer request but error returned from service then it should return status internal server error ", func(t *testing.T) {
 		app := fiber.New()
 		app.Post(route, mockAuthMiddleware(httpHandler.CurrencyConversionOffer))
+		givenExchangeRateOfferID := 2
 		givenOfferRequest := conversion.CurrencyConversionOfferRequest{
-			FromCurrency: "TRY",
-			ToCurrency:   "USD",
-			ExchangeRate: 2.30,
-			CreatedAt:    time.Now().Local(),
-			ExpiresAt:    time.Now().Add(3 * time.Minute).Unix(),
-			Balance:      200,
+			ExchangeRateOfferID: givenExchangeRateOfferID,
+			Balance:             200,
 		}
 		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		req.Header.Set("userID", strconv.FormatInt(int64(userID), 10))
@@ -79,13 +72,11 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 	t.Run("given conversion offer request then it should return status ok and ", func(t *testing.T) {
 		app := fiber.New()
 		app.Post(route, mockAuthMiddleware(httpHandler.CurrencyConversionOffer))
+		givenExchangeRateOfferID := 2
+
 		givenOfferRequest := conversion.CurrencyConversionOfferRequest{
-			FromCurrency: "TRY",
-			ToCurrency:   "USD",
-			ExchangeRate: 2.30,
-			CreatedAt:    time.Now().Local(),
-			ExpiresAt:    time.Now().Add(3 * time.Minute).Unix(),
-			Balance:      200,
+			ExchangeRateOfferID: givenExchangeRateOfferID,
+			Balance:             200,
 		}
 		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		req.Header.Set("userID", strconv.FormatInt(int64(userID), 10))

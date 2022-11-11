@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/auth"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/auth"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/eneskzlcn/currency-conversion-service/config"
 	"github.com/golang-jwt/jwt"
 	"github.com/golang/mock/gomock"
@@ -23,7 +23,7 @@ func Test_Tokenize(t *testing.T) {
 			Username: "iamexistinguser",
 			Password: "iamexistingpassword",
 		}
-		expectedUser := entity.User{
+		expectedUser := model.User{
 			ID:        1,
 			Username:  "iamexistinguser",
 			Password:  "iamexistingpassword",
@@ -47,7 +47,7 @@ func Test_Tokenize(t *testing.T) {
 		ctx := context.Background()
 		mockAuthRepository.EXPECT().
 			GetUserByUsernameAndPassword(ctx, givenCredentials.Username, givenCredentials.Password).
-			Return(entity.User{}, errors.New("user not found"))
+			Return(model.User{}, errors.New("user not found"))
 		accessToken, err := authService.Tokenize(ctx, givenCredentials)
 		assert.NotNil(t, err)
 		assert.Empty(t, accessToken)
@@ -64,7 +64,7 @@ func Test_ValidateToken(t *testing.T) {
 	authService := auth.NewService(config, mockAuthRepository, zap.S())
 
 	t.Run("given valid signed token then it should return nil when ValidateToken called", func(t *testing.T) {
-		givenUser := entity.User{
+		givenUser := model.User{
 			ID:       1,
 			Username: "ex",
 			Password: "ex",
@@ -83,7 +83,7 @@ func Test_ValidateToken(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 	t.Run("given valid but expired token then it should return error when ValidateToken called", func(t *testing.T) {
-		givenUser := entity.User{
+		givenUser := model.User{
 			ID:       1,
 			Username: "ex",
 			Password: "ex",
@@ -104,7 +104,7 @@ func TestService_ExtractUserIDFromToken(t *testing.T) {
 	}
 	authService, _ := newAuthServiceAndMockRepoWithGivenConfig(t, givenConfig)
 	t.Run("given valid token then it should extract the user id from token when ExtractUserIDFromToken called", func(t *testing.T) {
-		givenUser := entity.User{
+		givenUser := model.User{
 			ID:       2,
 			Username: "asd",
 		}
@@ -136,7 +136,7 @@ func newAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (
 	MockAuthRepository := mocks.NewMockAuthRepository(ctrl)
 	return auth.NewService(config, MockAuthRepository, zap.S()), MockAuthRepository
 }
-func createMockValidToken(config config.Jwt, user entity.User) (string, error) {
+func createMockValidToken(config config.Jwt, user model.User) (string, error) {
 	tokenDuration := time.Duration(config.ATExpirationMinutes) * time.Second
 	expirationTime := time.Now().Add(tokenDuration)
 	claims := auth.JWTClaim{

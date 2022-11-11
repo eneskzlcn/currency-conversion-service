@@ -3,8 +3,8 @@ package wallet_test
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/wallet"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/eneskzlcn/currency-conversion-service/app/wallet"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +32,7 @@ func TestService_GetUserWalletAccounts(t *testing.T) {
 	})
 	t.Run("given existing user id then it should return users wallet accounts", func(t *testing.T) {
 		userID := 2
-		mockUserWalletAccounts := []entity.UserWallet{
+		mockUserWalletAccounts := []model.UserWallet{
 			{
 				UserID:   userID,
 				Currency: "TRY",

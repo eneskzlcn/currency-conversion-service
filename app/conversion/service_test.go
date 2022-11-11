@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/conversion"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/conversion"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -14,125 +14,190 @@ import (
 )
 
 func TestService_CreateCurrencyConversion(t *testing.T) {
-	service, mockWalletService, mockConversionRepo := createServiceWithMockWalletServiceAndConversionRepository(t)
-	t.Run("given offer not same with saved user exchange rate offer then it should return false with error", func(t *testing.T) {
+	service, mockWalletService,
+		mockConversionRepo, mockRabbitmqProducer := createServiceWithMockWalletServiceAndConversionRepository(t)
+	t.Run("given exchange rate offer id that not found in database then it should return false with error", func(t *testing.T) {
 		givenConversionOfferReq := conversion.CurrencyConversionOfferRequest{
-			FromCurrency: "USD",
-			ToCurrency:   "TRY",
-			ExchangeRate: 2.30,
-			CreatedAt:    time.Now(),
-			ExpiresAt:    time.Now().Add(-10 * time.Minute).Unix(),
-			Balance:      200,
+			ExchangeRateOfferID: 2,
+			Balance:             200,
 		}
 		userID := 1
-		givenUserActiveExchangeOfferDTO := conversion.UserActiveExchangeOfferDTO{
-			UserID:       userID,
-			FromCurrency: givenConversionOfferReq.FromCurrency,
-			ToCurrency:   givenConversionOfferReq.ToCurrency,
-		}
-
-		mockConversionRepo.EXPECT().GetUserActiveExchangeOffer(gomock.Any(), givenUserActiveExchangeOfferDTO).
-			Return(entity.UserActiveExchangeOffer{}, errors.New(""))
+		givenUserActiveExchangeOfferDTO := conversion.NewGetExchangeRateOfferDTO(givenConversionOfferReq.ExchangeRateOfferID)
+		mockConversionRepo.EXPECT().GetExchangeOfferByID(gomock.Any(), givenUserActiveExchangeOfferDTO).
+			Return(model.ExchangeRateOffer{}, errors.New(""))
 		success, err := service.ConvertCurrencies(context.TODO(), userID, givenConversionOfferReq)
 		assert.NotNil(t, err)
 		assert.False(t, success)
 	})
 	t.Run("given expired exchange offer request then it should return false with error", func(t *testing.T) {
 		givenConversionOfferReq := conversion.CurrencyConversionOfferRequest{
-			FromCurrency: "USD",
-			ToCurrency:   "TRY",
-			ExchangeRate: 2.30,
-			CreatedAt:    time.Now(),
-			ExpiresAt:    time.Now().Add(-10 * time.Minute).Unix(),
-			Balance:      200,
+			ExchangeRateOfferID: 2,
+			Balance:             200,
 		}
 		userID := 2
-		expectedUserActiveExchangeOffer := entity.UserActiveExchangeOffer{
+		expectedExchangeRateOffer := model.ExchangeRateOffer{
 			UserID:         userID,
-			FromCurrency:   givenConversionOfferReq.FromCurrency,
-			ToCurrency:     givenConversionOfferReq.ToCurrency,
-			ExchangeRate:   givenConversionOfferReq.ExchangeRate,
-			OfferCreatedAt: givenConversionOfferReq.CreatedAt,
-			OfferExpiresAt: givenConversionOfferReq.ExpiresAt,
+			FromCurrency:   "TRY",
+			ToCurrency:     "USD",
+			ExchangeRate:   2.3,
+			OfferCreatedAt: time.Now(),
+			OfferExpiresAt: time.Now().Add(time.Hour * -3).Unix(),
 		}
-		mockConversionRepo.EXPECT().GetUserActiveExchangeOffer(gomock.Any(), gomock.Any()).
-			Return(expectedUserActiveExchangeOffer, nil)
+		givenGetExchangeRateOfferDTO := conversion.NewGetExchangeRateOfferDTO(givenConversionOfferReq.ExchangeRateOfferID)
+		mockConversionRepo.EXPECT().GetExchangeOfferByID(gomock.Any(), givenGetExchangeRateOfferDTO).
+			Return(expectedExchangeRateOffer, nil)
 		success, err := service.ConvertCurrencies(context.TODO(), userID, givenConversionOfferReq)
 		assert.False(t, success)
 		assert.NotNil(t, err)
 		assert.Equal(t, err.Error(), conversion.CurrencyConversionOfferExpired)
 	})
-	t.Run("given balance amount that user not have in its from currency account then it should return false with error", func(t *testing.T) {
+	t.Run("given senderBalanceDecAmount amount that user not have in its from currency account then it should return false with error", func(t *testing.T) {
 		givenConversionOfferReq := conversion.CurrencyConversionOfferRequest{
-			FromCurrency: "USD",
-			ToCurrency:   "TRY",
-			ExchangeRate: 2.30,
-			CreatedAt:    time.Now(),
-			ExpiresAt:    time.Now().Add(10 * time.Minute).Unix(),
-			Balance:      200,
+			ExchangeRateOfferID: 2,
+			Balance:             200,
 		}
 		userID := 2
-		expectedUserActiveExchangeOffer := entity.UserActiveExchangeOffer{
+		expectedUserActiveExchangeOffer := model.ExchangeRateOffer{
+			ID:             givenConversionOfferReq.ExchangeRateOfferID,
 			UserID:         userID,
-			FromCurrency:   givenConversionOfferReq.FromCurrency,
-			ToCurrency:     givenConversionOfferReq.ToCurrency,
-			ExchangeRate:   givenConversionOfferReq.ExchangeRate,
-			OfferCreatedAt: givenConversionOfferReq.CreatedAt,
-			OfferExpiresAt: givenConversionOfferReq.ExpiresAt,
+			FromCurrency:   "USD",
+			ToCurrency:     "TRY",
+			ExchangeRate:   2.30,
+			OfferCreatedAt: time.Now(),
+			OfferExpiresAt: time.Now().Add(10 * time.Minute).Unix(),
 		}
-		mockConversionRepo.EXPECT().GetUserActiveExchangeOffer(gomock.Any(), gomock.Any()).
+
+		givenGetExchangeRateOfferDTO := conversion.NewGetExchangeRateOfferDTO(givenConversionOfferReq.ExchangeRateOfferID)
+		mockConversionRepo.EXPECT().GetExchangeOfferByID(gomock.Any(), givenGetExchangeRateOfferDTO).
 			Return(expectedUserActiveExchangeOffer, nil)
+
 		mockWalletService.EXPECT().
-			GetUserBalanceOnGivenCurrency(gomock.Any(), userID, givenConversionOfferReq.FromCurrency).
+			GetUserBalanceOnGivenCurrency(gomock.Any(), userID, expectedUserActiveExchangeOffer.FromCurrency).
 			Return(float32(100), nil)
+
 		success, err := service.ConvertCurrencies(context.TODO(), userID, givenConversionOfferReq)
 		assert.False(t, success)
 		assert.NotNil(t, err)
 		assert.Equal(t, err.Error(), conversion.NotEnoughBalanceForConversionOffer)
 	})
-	t.Run("given valid currency conversion offer then it should return true", func(t *testing.T) {
+	t.Run("given error occurred when producing currency converted message on rabbitmq then it should return error", func(t *testing.T) {
 		givenConversionOfferReq := conversion.CurrencyConversionOfferRequest{
-			FromCurrency: "USD",
-			ToCurrency:   "TRY",
-			ExchangeRate: 2.30,
-			CreatedAt:    time.Now(),
-			ExpiresAt:    time.Now().Add(10 * time.Minute).Unix(),
-			Balance:      float32(200),
+			ExchangeRateOfferID: 2,
+			Balance:             200,
 		}
 		userID := 2
-		expectedUserActiveExchangeOffer := entity.UserActiveExchangeOffer{
+		expectedUserActiveExchangeOffer := model.ExchangeRateOffer{
+			ID:             givenConversionOfferReq.ExchangeRateOfferID,
 			UserID:         userID,
-			FromCurrency:   givenConversionOfferReq.FromCurrency,
-			ToCurrency:     givenConversionOfferReq.ToCurrency,
-			ExchangeRate:   givenConversionOfferReq.ExchangeRate,
-			OfferCreatedAt: givenConversionOfferReq.CreatedAt,
-			OfferExpiresAt: givenConversionOfferReq.ExpiresAt,
+			FromCurrency:   "USD",
+			ToCurrency:     "TRY",
+			ExchangeRate:   2.30,
+			OfferCreatedAt: time.Now(),
+			OfferExpiresAt: time.Now().Add(10 * time.Minute).Unix(),
 		}
-		mockConversionRepo.EXPECT().GetUserActiveExchangeOffer(gomock.Any(), gomock.Any()).
+
+		givenGetExchangeRateOfferDTO := conversion.NewGetExchangeRateOfferDTO(givenConversionOfferReq.ExchangeRateOfferID)
+		mockConversionRepo.EXPECT().GetExchangeOfferByID(gomock.Any(), givenGetExchangeRateOfferDTO).
 			Return(expectedUserActiveExchangeOffer, nil)
-		targetCurrencyBalanceAdjustAmount := givenConversionOfferReq.ExchangeRate * givenConversionOfferReq.Balance
+
 		mockWalletService.EXPECT().
-			GetUserBalanceOnGivenCurrency(gomock.Any(), userID, givenConversionOfferReq.FromCurrency).
+			GetUserBalanceOnGivenCurrency(gomock.Any(), userID, expectedUserActiveExchangeOffer.FromCurrency).
 			Return(float32(500), nil)
 
-		mockWalletService.EXPECT().
-			AdjustUserBalanceOnGivenCurrency(gomock.Any(), userID,
-				givenConversionOfferReq.FromCurrency, -1*givenConversionOfferReq.Balance).
-			Return(true, nil)
+		senderBalanceDecAmount := givenConversionOfferReq.Balance
+		receiverBalanceIncAmount := givenConversionOfferReq.Balance * expectedUserActiveExchangeOffer.ExchangeRate
+		currencyConvertedMessage := conversion.CurrencyConvertedMessage{
+			UserID:                   userID,
+			FromCurrency:             expectedUserActiveExchangeOffer.FromCurrency,
+			ToCurrency:               expectedUserActiveExchangeOffer.ToCurrency,
+			SenderBalanceDecAmount:   senderBalanceDecAmount,
+			ReceiverBalanceIncAmount: receiverBalanceIncAmount,
+		}
+		createUserConversionDTO := conversion.NewCreateUserConversionDTO(userID,
+			expectedUserActiveExchangeOffer.FromCurrency,
+			expectedUserActiveExchangeOffer.ToCurrency, senderBalanceDecAmount, receiverBalanceIncAmount)
+
+		expectedCurrencyConversion := model.UserCurrencyConversion{
+			ID:                       2,
+			UserID:                   userID,
+			FromCurrency:             expectedUserActiveExchangeOffer.FromCurrency,
+			ToCurrency:               expectedUserActiveExchangeOffer.ToCurrency,
+			SenderBalanceDecAmount:   givenConversionOfferReq.Balance,
+			ReceiverBalanceIncAmount: givenConversionOfferReq.Balance * expectedUserActiveExchangeOffer.ExchangeRate,
+			CreatedAt:                time.Time{},
+		}
+		mockConversionRepo.EXPECT().CreateUserConversion(gomock.Any(), createUserConversionDTO).
+			Return(expectedCurrencyConversion, nil)
+
+		mockRabbitmqProducer.EXPECT().PushConversionCreatedMessage(currencyConvertedMessage).
+			Return(errors.New(""))
+
+		success, err := service.ConvertCurrencies(context.TODO(), userID,
+			givenConversionOfferReq)
+		assert.NotNil(t, err)
+		assert.False(t, success)
+	})
+	t.Run("given valid currency conversion offer then it should return true", func(t *testing.T) {
+		givenConversionOfferReq := conversion.CurrencyConversionOfferRequest{
+			ExchangeRateOfferID: 2,
+			Balance:             200,
+		}
+		userID := 2
+		expectedUserActiveExchangeOffer := model.ExchangeRateOffer{
+			ID:             givenConversionOfferReq.ExchangeRateOfferID,
+			UserID:         userID,
+			FromCurrency:   "USD",
+			ToCurrency:     "TRY",
+			ExchangeRate:   2.30,
+			OfferCreatedAt: time.Now(),
+			OfferExpiresAt: time.Now().Add(10 * time.Minute).Unix(),
+		}
+
+		givenGetExchangeRateOfferDTO := conversion.NewGetExchangeRateOfferDTO(givenConversionOfferReq.ExchangeRateOfferID)
+		mockConversionRepo.EXPECT().GetExchangeOfferByID(gomock.Any(), givenGetExchangeRateOfferDTO).
+			Return(expectedUserActiveExchangeOffer, nil)
 
 		mockWalletService.EXPECT().
-			AdjustUserBalanceOnGivenCurrency(gomock.Any(), userID,
-				givenConversionOfferReq.ToCurrency, targetCurrencyBalanceAdjustAmount).
-			Return(true, nil)
+			GetUserBalanceOnGivenCurrency(gomock.Any(), userID, expectedUserActiveExchangeOffer.FromCurrency).
+			Return(float32(500), nil)
+
+		senderBalanceDecAmount := givenConversionOfferReq.Balance
+		receiverBalanceIncAmount := givenConversionOfferReq.Balance * expectedUserActiveExchangeOffer.ExchangeRate
+
+		currencyConvertedMessage := conversion.CurrencyConvertedMessage{
+			UserID:                   userID,
+			FromCurrency:             expectedUserActiveExchangeOffer.FromCurrency,
+			ToCurrency:               expectedUserActiveExchangeOffer.ToCurrency,
+			SenderBalanceDecAmount:   senderBalanceDecAmount,
+			ReceiverBalanceIncAmount: receiverBalanceIncAmount,
+		}
+		createUserConversionDTO := conversion.NewCreateUserConversionDTO(userID,
+			expectedUserActiveExchangeOffer.FromCurrency,
+			expectedUserActiveExchangeOffer.ToCurrency, senderBalanceDecAmount, receiverBalanceIncAmount)
+		expectedCurrencyConversion := model.UserCurrencyConversion{
+			ID:                       2,
+			UserID:                   userID,
+			FromCurrency:             expectedUserActiveExchangeOffer.FromCurrency,
+			ToCurrency:               expectedUserActiveExchangeOffer.ToCurrency,
+			SenderBalanceDecAmount:   givenConversionOfferReq.Balance,
+			ReceiverBalanceIncAmount: givenConversionOfferReq.Balance * expectedUserActiveExchangeOffer.ExchangeRate,
+			CreatedAt:                time.Time{},
+		}
+		mockConversionRepo.EXPECT().CreateUserConversion(gomock.Any(), createUserConversionDTO).
+			Return(expectedCurrencyConversion, nil)
+		mockRabbitmqProducer.EXPECT().PushConversionCreatedMessage(currencyConvertedMessage).Return(nil)
 
 		success, err := service.ConvertCurrencies(context.TODO(), userID, givenConversionOfferReq)
 		assert.Nil(t, err)
 		assert.True(t, success)
 	})
 }
-func createServiceWithMockWalletServiceAndConversionRepository(t *testing.T) (conversion.Service, *mocks.MockWalletService, *mocks.MockRepository) {
+func createServiceWithMockWalletServiceAndConversionRepository(t *testing.T) (conversion.Service, *mocks.MockWalletService,
+	*mocks.MockRepository, *mocks.MockRabbitmqProducer) {
 	ctrl := gomock.NewController(t)
 	mockWalletService := mocks.NewMockWalletService(ctrl)
 	mockConversionRepo := mocks.NewMockRepository(ctrl)
-	return conversion.NewService(mockWalletService, zap.S(), mockConversionRepo), mockWalletService, mockConversionRepo
+	mockRabbitmqProducer := mocks.NewMockRabbitmqProducer(ctrl)
+	return conversion.NewService(mockWalletService, zap.S(), mockConversionRepo,
+		mockRabbitmqProducer), mockWalletService, mockConversionRepo, mockRabbitmqProducer
 }

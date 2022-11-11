@@ -3,7 +3,7 @@ package wallet
 import (
 	"context"
 	"database/sql"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"go.uber.org/zap"
 )
 
@@ -12,7 +12,7 @@ type postgresRepository struct {
 	logger *zap.SugaredLogger
 }
 
-func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *postgresRepository {
+func NewPostgresRepository(db *sql.DB, logger *zap.SugaredLogger) *postgresRepository {
 	return &postgresRepository{db: db, logger: logger}
 }
 
@@ -26,7 +26,7 @@ func (r *postgresRepository) IsUserWithUserIDExists(ctx context.Context, userID 
 	return exists, nil
 }
 
-func (r *postgresRepository) GetUserWalletAccounts(ctx context.Context, userID int) ([]entity.UserWallet, error) {
+func (r *postgresRepository) GetUserWalletAccounts(ctx context.Context, userID int) ([]model.UserWallet, error) {
 	query := `
 		SELECT user_id, currency_code, balance, created_at, updated_at
 		FROM user_wallets uw 
@@ -36,9 +36,9 @@ func (r *postgresRepository) GetUserWalletAccounts(ctx context.Context, userID i
 		return nil, err
 	}
 	defer rows.Close()
-	var userWallets []entity.UserWallet
+	var userWallets []model.UserWallet
 	for rows.Next() {
-		var wallet entity.UserWallet
+		var wallet model.UserWallet
 		err = rows.Scan(
 			&wallet.UserID,
 			&wallet.Currency,

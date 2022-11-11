@@ -5,7 +5,7 @@ package wallet_test
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/eneskzlcn/currency-conversion-service/app/wallet"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,7 @@ import (
 
 func TestRepository_IsUserWithUserIDExists(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := wallet.NewRepository(db, zap.S())
+	repository := wallet.NewPostgresRepository(db, zap.S())
 	query := regexp.QuoteMeta(`SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)`)
 	t.Run("given existing user id then it should return true ", func(t *testing.T) {
 		userID := 2
@@ -42,7 +42,7 @@ func TestRepository_IsUserWithUserIDExists(t *testing.T) {
 }
 func TestRepository_GetUserWalletAccounts(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := wallet.NewRepository(db, zap.S())
+	repository := wallet.NewPostgresRepository(db, zap.S())
 	query := regexp.QuoteMeta(`SELECT user_id, currency_code, balance, created_at, updated_at
 			FROM user_wallets uw WHERE uw.user_id = $1`)
 
@@ -57,7 +57,7 @@ func TestRepository_GetUserWalletAccounts(t *testing.T) {
 	t.Run("given user that has wallet accounts then it should return wallet accounts array", func(t *testing.T) {
 		userID := 4
 		expectedRows := sqlmock.NewRows([]string{"user_id", "currency_code", "balance", "created_at", "updated_at"})
-		expectedUserWallets := []entity.UserWallet{
+		expectedUserWallets := []model.UserWallet{
 			{
 				UserID:    userID,
 				Currency:  "TRY",
@@ -85,7 +85,7 @@ func TestRepository_GetUserWalletAccounts(t *testing.T) {
 }
 func TestRepository_GetUserBalanceOnGivenCurrency(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := wallet.NewRepository(db, zap.S())
+	repository := wallet.NewPostgresRepository(db, zap.S())
 	query := regexp.QuoteMeta(`SELECT balance FROM user_wallets WHERE user_id = $1 AND currency_code = $2`)
 	t.Run("given existing wallet with user id and currency then it should return balance", func(t *testing.T) {
 		userID := 2
@@ -110,7 +110,7 @@ func TestRepository_GetUserBalanceOnGivenCurrency(t *testing.T) {
 }
 func TestRepository_AdjustUserBalanceOnGivenCurrency(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := wallet.NewRepository(db, zap.S())
+	repository := wallet.NewPostgresRepository(db, zap.S())
 	query := regexp.QuoteMeta(`
 	UPDATE user_wallets 
 	SET balance = balance + $1 

@@ -3,7 +3,7 @@ package exchange
 import (
 	"context"
 	"database/sql"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"go.uber.org/zap"
 )
 
@@ -12,7 +12,7 @@ type postgresRepository struct {
 	logger *zap.SugaredLogger
 }
 
-func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *postgresRepository {
+func NewPostgresRepository(db *sql.DB, logger *zap.SugaredLogger) *postgresRepository {
 	return &postgresRepository{db: db, logger: logger}
 }
 func (r *postgresRepository) IsCurrencyExists(ctx context.Context, currency string) (bool, error) {
@@ -23,13 +23,13 @@ func (r *postgresRepository) IsCurrencyExists(ctx context.Context, currency stri
 	return isExists, err
 }
 func (r *postgresRepository) GetExchangeValuesForGivenCurrencies(ctx context.Context,
-	fromCurrency, toCurrency string) (entity.CurrencyExchangeValues, error) {
+	fromCurrency, toCurrency string) (model.CurrencyExchangeValues, error) {
 	query := `
 		SELECT currency_from, currency_to, exchange_rate, markup_rate, created_at, updated_at
 		FROM currency_exchange_values WHERE currency_from = $1 AND currency_to = $2`
 
 	row := r.db.QueryRowContext(ctx, query, fromCurrency, toCurrency)
-	var exchange entity.CurrencyExchangeValues
+	var exchange model.CurrencyExchangeValues
 	err := row.Scan(&exchange.FromCurrency,
 		&exchange.ToCurrency,
 		&exchange.ExchangeRate,
@@ -38,7 +38,7 @@ func (r *postgresRepository) GetExchangeValuesForGivenCurrencies(ctx context.Con
 		&exchange.UpdatedAt,
 	)
 	if err != nil {
-		return entity.CurrencyExchangeValues{}, err
+		return model.CurrencyExchangeValues{}, err
 	}
 	return exchange, nil
 }

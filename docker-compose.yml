@@ -13,6 +13,18 @@ services:
       - currency-volume:/var/lib/postgresql/data
     networks:
       - currency-network
+  rabbitmq:
+    image: rabbitmq:3.7-management
+    container_name: currency-conversion-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "15672:15672"
+      - "6001:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+    networks:
+      - currency-network
   app:
     container_name: currency-conversion-service
     build: .
@@ -24,14 +36,11 @@ services:
       - postgres-db
     environment:
       - APP_ENV=local
-      - JWT_AT_PRIVATE_KEY=MySecretKey
-      - JWT_AT_EXPIRATION_MIN=400
-      - DB_USERNAME=currency
-      - DB_PASSWORD=currency
-      - DB_NAME=currency
       - DB_HOST=currency-conversion-db
       - DB_PORT=5432
       - SERVER_PORT=4001
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_HOST=currency-conversion-rabbitmq
 volumes:
   currency-volume:
 

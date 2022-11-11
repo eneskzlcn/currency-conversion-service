@@ -1,6 +1,6 @@
 package wallet
 
-import "github.com/eneskzlcn/currency-conversion-service/app/entity"
+import "github.com/eneskzlcn/currency-conversion-service/app/model"
 
 type UserWalletAccountsResponse struct {
 	Accounts []UserWalletAccount `json:"accounts"`
@@ -10,7 +10,7 @@ type UserWalletAccount struct {
 	Balance  float32 `json:"balance"`
 }
 
-func UserWalletAccountResponseFromUserWallets(userWallets []entity.UserWallet) UserWalletAccountsResponse {
+func UserWalletAccountResponseFromUserWallets(userWallets []model.UserWallet) UserWalletAccountsResponse {
 	var response UserWalletAccountsResponse
 	for _, userWallet := range userWallets {
 		userWalletAccount := UserWalletAccount{

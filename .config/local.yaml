@@ -1,9 +1,14 @@
 JWT_AT_PRIVATE_KEY: "MySecretKey"
 JWT_AT_EXPIRATION_MIN: 400
+
 DB_USERNAME: "currency"
 DB_PASSWORD: "currency"
 DB_NAME: "currency"
 DB_HOST: "localhost"
 DB_PORT: "5435"
-SERVER_PORT: "4001"
 
+RABBITMQ_USERNAME: "currency-conversion"
+RABBITMQ_PASSWORD: "currency-conversion"
+RABBITMQ_PORT: "localhost"
+RABBITMQ_HOST: "6001"
+RABBITMQ_CURRENCY_CONVERTED_QUEUE: "currency-converted"

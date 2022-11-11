@@ -9,6 +9,7 @@ import (
 	"github.com/eneskzlcn/currency-conversion-service/config"
 	"github.com/eneskzlcn/currency-conversion-service/logger"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
+	"github.com/eneskzlcn/currency-conversion-service/rabbitmq"
 	"github.com/eneskzlcn/currency-conversion-service/server"
 	"os"
 )
@@ -32,22 +33,24 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	rabbitmqClient := rabbitmq.NewClient(appConfig.Rabbitmq, logger)
 
-	authRepository := auth.NewRepository(db, logger)
+	authRepository := auth.NewPostgresRepository(db, logger)
 	authService := auth.NewService(appConfig.Jwt, authRepository, logger)
 	authHttpHandler := auth.NewHttpHandler(authService, logger)
 	authGuard := auth.NewGuard(authService, logger)
 
-	walletRepository := wallet.NewRepository(db, logger)
+	walletRepository := wallet.NewPostgresRepository(db, logger)
 	walletService := wallet.NewService(walletRepository, logger)
 	walletHttpHandler := wallet.NewHttpHandler(walletService, authGuard, logger)
 
-	exchangeRepository := exchange.NewRepository(db, logger)
+	exchangeRepository := exchange.NewPostgresRepository(db, logger)
 	exchangeService := exchange.NewService(exchangeRepository, logger)
 	exchangeHttpHandler := exchange.NewHttpHandler(exchangeService, authGuard, logger)
 
-	conversionRepository := conversion.NewRepository(db, logger)
-	conversionService := conversion.NewService(walletService, logger, conversionRepository)
+	conversionRepository := conversion.NewPostgresRepository(db, logger)
+	conversionRabbitmqProducer := conversion.NewRabbitMqProducer(rabbitmqClient, appConfig.Rabbitmq)
+	conversionService := conversion.NewService(walletService, logger, conversionRepository, conversionRabbitmqProducer)
 	conversionHttpHandler := conversion.NewHttpHandler(conversionService, authGuard, logger)
 
 	server := server.New([]server.Handler{

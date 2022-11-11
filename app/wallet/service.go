@@ -3,12 +3,12 @@ package wallet
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"go.uber.org/zap"
 )
 
 type Repository interface {
-	GetUserWalletAccounts(ctx context.Context, userID int) ([]entity.UserWallet, error)
+	GetUserWalletAccounts(ctx context.Context, userID int) ([]model.UserWallet, error)
 	GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error)
 	AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error)
 	IsUserWithUserIDExists(ctx context.Context, userID int) (bool, error)

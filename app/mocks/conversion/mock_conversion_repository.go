@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	conversion "github.com/eneskzlcn/currency-conversion-service/app/conversion"
-	entity "github.com/eneskzlcn/currency-conversion-service/app/entity"
+	model "github.com/eneskzlcn/currency-conversion-service/app/model"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -36,17 +36,32 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
-// GetUserActiveExchangeOffer mocks base method.
-func (m *MockRepository) GetUserActiveExchangeOffer(arg0 context.Context, arg1 conversion.UserActiveExchangeOfferDTO) (entity.UserActiveExchangeOffer, error) {
+// CreateUserConversion mocks base method.
+func (m *MockRepository) CreateUserConversion(arg0 context.Context, arg1 conversion.CreateUserConversionDTO) (model.UserCurrencyConversion, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserActiveExchangeOffer", arg0, arg1)
-	ret0, _ := ret[0].(entity.UserActiveExchangeOffer)
+	ret := m.ctrl.Call(m, "CreateUserConversion", arg0, arg1)
+	ret0, _ := ret[0].(model.UserCurrencyConversion)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserActiveExchangeOffer indicates an expected call of GetUserActiveExchangeOffer.
-func (mr *MockRepositoryMockRecorder) GetUserActiveExchangeOffer(arg0, arg1 interface{}) *gomock.Call {
+// CreateUserConversion indicates an expected call of CreateUserConversion.
+func (mr *MockRepositoryMockRecorder) CreateUserConversion(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserActiveExchangeOffer", reflect.TypeOf((*MockRepository)(nil).GetUserActiveExchangeOffer), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserConversion", reflect.TypeOf((*MockRepository)(nil).CreateUserConversion), arg0, arg1)
+}
+
+// GetExchangeOfferByID mocks base method.
+func (m *MockRepository) GetExchangeOfferByID(arg0 context.Context, arg1 conversion.GetExchangeRateOfferDTO) (model.ExchangeRateOffer, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetExchangeOfferByID", arg0, arg1)
+	ret0, _ := ret[0].(model.ExchangeRateOffer)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetExchangeOfferByID indicates an expected call of GetExchangeOfferByID.
+func (mr *MockRepositoryMockRecorder) GetExchangeOfferByID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExchangeOfferByID", reflect.TypeOf((*MockRepository)(nil).GetExchangeOfferByID), arg0, arg1)
 }

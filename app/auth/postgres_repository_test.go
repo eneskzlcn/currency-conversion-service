@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/auth"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -15,7 +15,7 @@ import (
 
 func TestPostgresRepository_GetUserByUsernameAndPassword(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := auth.NewRepository(db, zap.S())
+	repository := auth.NewPostgresRepository(db, zap.S())
 	query := regexp.QuoteMeta(`
 		SELECT id, username, password, created_at, updated_at
 		FROM users WHERE username = $1 AND password = $2`)
@@ -35,7 +35,7 @@ func TestPostgresRepository_GetUserByUsernameAndPassword(t *testing.T) {
 	t.Run("given existing username and password then it should return user without error", func(t *testing.T) {
 		givenUsername := "existinguser"
 		givenPassword := "existingpass"
-		expectedUser := entity.User{
+		expectedUser := model.User{
 			ID:        1,
 			Username:  givenUsername,
 			Password:  givenPassword,

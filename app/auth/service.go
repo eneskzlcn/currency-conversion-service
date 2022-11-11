@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/eneskzlcn/currency-conversion-service/config"
 	"github.com/golang-jwt/jwt"
 	"go.uber.org/zap"
@@ -11,7 +11,7 @@ import (
 )
 
 type Repository interface {
-	GetUserByUsernameAndPassword(ctx context.Context, username string, password string) (entity.User, error)
+	GetUserByUsernameAndPassword(ctx context.Context, username string, password string) (model.User, error)
 }
 type service struct {
 	config     config.Jwt

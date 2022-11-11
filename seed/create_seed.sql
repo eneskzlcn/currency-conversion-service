@@ -38,6 +38,17 @@ CREATE TABLE IF NOT EXISTS user_exchange_offers(
     offer_created_at TIMESTAMP NOT NULL,
     offer_expires_at INT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS user_currency_conversions(
+    id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id INTEGER REFERENCES users ON DELETE CASCADE ON UPDATE CASCADE,
+    currency_from VARCHAR NOT NULL REFERENCES currencies ON DELETE CASCADE ON UPDATE CASCADE,
+    currency_to VARCHAR NOT NULL REFERENCES currencies ON DELETE CASCADE ON UPDATE CASCADE,
+    sender_balance_dec_amount FLOAT NOT NULL,
+    receiver_balance_inc_amount FLOAT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
 INSERT INTO currencies (code) VALUES ('TRY');
 INSERT INTO currencies (code) VALUES ('USD');
 

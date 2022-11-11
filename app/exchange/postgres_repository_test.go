@@ -3,8 +3,8 @@ package exchange_test
 import (
 	"context"
 	"errors"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	"github.com/eneskzlcn/currency-conversion-service/app/exchange"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
@@ -15,7 +15,7 @@ import (
 
 func TestRepository_IsCurrencyExists(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := exchange.NewRepository(db, zap.S())
+	repository := exchange.NewPostgresRepository(db, zap.S())
 	query := regexp.QuoteMeta(`SELECT EXISTS ( SELECT 1 FROM currencies WHERE code = $1)`)
 	t.Run("given not existing currency code then it should return false", func(t *testing.T) {
 		givenCurrency := "asf"
@@ -38,14 +38,14 @@ func TestRepository_IsCurrencyExists(t *testing.T) {
 }
 func TestRepository_GetExchangeValuesForGivenCurrencies(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := exchange.NewRepository(db, zap.S())
+	repository := exchange.NewPostgresRepository(db, zap.S())
 	query := regexp.QuoteMeta(`
 		SELECT currency_from, currency_to, exchange_rate, markup_rate, created_at, updated_at
 		FROM currency_exchange_values WHERE currency_from = $1 AND currency_to = $2`)
 	t.Run("given existing currencies then it should return exchange", func(t *testing.T) {
 		givenCurrencyFrom := "TRY"
 		givenCurrencyTo := "USD"
-		expectedExchange := entity.CurrencyExchangeValues{
+		expectedExchange := model.CurrencyExchangeValues{
 			FromCurrency: givenCurrencyFrom,
 			ToCurrency:   givenCurrencyTo,
 			ExchangeRate: 12.3,
@@ -82,7 +82,7 @@ func TestRepository_GetExchangeValuesForGivenCurrencies(t *testing.T) {
 
 func TestRepository_SetUserActiveExchangeRateOffer(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
-	repository := exchange.NewRepository(db, zap.S())
+	repository := exchange.NewPostgresRepository(db, zap.S())
 	query := regexp.QuoteMeta(`INSERT INTO user_exchange_offers(user_id, 
 	currency_from, currency_to, exchange_rate, offer_created_at, offer_expires_at)
 	VALUES ($1, $2, $3, $4, $5, $6) 

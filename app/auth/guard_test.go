@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/auth"
 	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
-	"github.com/eneskzlcn/currency-conversion-service/app/entity"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/auth"
+	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/eneskzlcn/currency-conversion-service/config"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
@@ -29,7 +29,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 			ATPrivateKey:        "private",
 			ATExpirationMinutes: 10,
 		}
-		givenUser := entity.User{
+		givenUser := model.User{
 			ID:       1,
 			Username: "user",
 			Password: "user",
