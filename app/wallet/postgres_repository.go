@@ -79,3 +79,38 @@ func (r *postgresRepository) AdjustUserBalanceOnGivenCurrency(ctx context.Contex
 	}
 	return true, nil
 }
+
+func (r *postgresRepository) TransferBalancesBetweenUserWallets(ctx context.Context,
+	dto TransferBalanceBetweenUserWalletsDTO) error {
+	query := `
+	UPDATE user_wallets
+	SET balance = balance + $1
+	WHERE user_id = $2 AND currency_code = $3`
+
+	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return err
+	}
+	if err = r.updateUserWalletInTransaction(ctx, query, tx, dto.UserID(),
+		dto.FromCurrency(), dto.SenderBalanceDecAmount()); err != nil {
+		return err
+	}
+
+	if err = r.updateUserWalletInTransaction(ctx, query, tx, dto.UserID(),
+		dto.ToCurrency(), dto.ReceiverBalanceIncAmount()); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (r *postgresRepository) updateUserWalletInTransaction(ctx context.Context, query string, tx *sql.Tx, userID int, currency string, balance float32) error {
+	row := tx.QueryRowContext(ctx, query, balance, userID, currency)
+	if err := row.Err(); err != nil {
+		if rollBackErr := tx.Rollback(); rollBackErr != nil {
+			return rollBackErr
+		}
+		return err
+	}
+	return nil
+}

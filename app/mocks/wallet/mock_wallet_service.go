@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	message "github.com/eneskzlcn/currency-conversion-service/app/message"
 	wallet "github.com/eneskzlcn/currency-conversion-service/app/wallet"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -48,4 +49,18 @@ func (m *MockService) GetUserWalletAccounts(arg0 context.Context, arg1 int) (wal
 func (mr *MockServiceMockRecorder) GetUserWalletAccounts(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserWalletAccounts", reflect.TypeOf((*MockService)(nil).GetUserWalletAccounts), arg0, arg1)
+}
+
+// TransferBalancesBetweenUserWallets mocks base method.
+func (m *MockService) TransferBalancesBetweenUserWallets(arg0 context.Context, arg1 message.CurrencyConvertedMessage) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransferBalancesBetweenUserWallets", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TransferBalancesBetweenUserWallets indicates an expected call of TransferBalancesBetweenUserWallets.
+func (mr *MockServiceMockRecorder) TransferBalancesBetweenUserWallets(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferBalancesBetweenUserWallets", reflect.TypeOf((*MockService)(nil).TransferBalancesBetweenUserWallets), arg0, arg1)
 }

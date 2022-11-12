@@ -43,6 +43,7 @@ func run() error {
 	walletRepository := wallet.NewPostgresRepository(db, logger)
 	walletService := wallet.NewService(walletRepository, logger)
 	walletHttpHandler := wallet.NewHttpHandler(walletService, authGuard, logger)
+	walletRabbitmqConsumer := wallet.NewRabbitmqConsumer(rabbitmqClient, logger, walletService, appConfig.Rabbitmq)
 
 	exchangeRepository := exchange.NewPostgresRepository(db, logger)
 	exchangeService := exchange.NewService(exchangeRepository, logger)
@@ -59,6 +60,8 @@ func run() error {
 		exchangeHttpHandler,
 		conversionHttpHandler,
 	}, appConfig.Server, logger)
+
+	go walletRabbitmqConsumer.ConsumeCurrencyConvertedQueue()
 
 	return server.Start()
 }

@@ -1,4 +1,4 @@
-package conversion
+package message
 
 type CurrencyConvertedMessage struct {
 	UserID                   int

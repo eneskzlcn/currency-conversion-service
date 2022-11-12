@@ -11,35 +11,6 @@ func (g GetExchangeRateOfferDTO) ExchangeRateOfferID() int {
 	return g.exchangeRateOfferID
 }
 
-type TransferBalanceBetweenUserWalletsDTO struct {
-	userID       int
-	fromCurrency string
-	toCurrency   string
-	balance      float32
-}
-
-func NewTransferBalanceBetweenUserWalletsDTO(userID int, fromCurrency string, toCurrency string,
-	balance float32) TransferBalanceBetweenUserWalletsDTO {
-	return TransferBalanceBetweenUserWalletsDTO{userID: userID, fromCurrency: fromCurrency,
-		toCurrency: toCurrency, balance: balance}
-}
-
-func (t TransferBalanceBetweenUserWalletsDTO) UserID() int {
-	return t.userID
-}
-
-func (t TransferBalanceBetweenUserWalletsDTO) FromCurrency() string {
-	return t.fromCurrency
-}
-
-func (t TransferBalanceBetweenUserWalletsDTO) ToCurrency() string {
-	return t.toCurrency
-}
-
-func (t TransferBalanceBetweenUserWalletsDTO) Balance() float32 {
-	return t.balance
-}
-
 type CreateUserConversionDTO struct {
 	userID                   int
 	fromCurrency             string

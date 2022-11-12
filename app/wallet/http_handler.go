@@ -4,12 +4,14 @@ import (
 	"context"
 	"github.com/eneskzlcn/currency-conversion-service/app/common"
 	"github.com/eneskzlcn/currency-conversion-service/app/common/httperror"
+	"github.com/eneskzlcn/currency-conversion-service/app/message"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )
 
 type Service interface {
 	GetUserWalletAccounts(ctx context.Context, userID int) (UserWalletAccountsResponse, error)
+	TransferBalancesBetweenUserWallets(ctx context.Context, msg message.CurrencyConvertedMessage) error
 }
 type AuthGuard interface {
 	ProtectWithJWT(handler fiber.Handler) fiber.Handler

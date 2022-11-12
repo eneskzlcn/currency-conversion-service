@@ -3,6 +3,7 @@ package conversion
 import (
 	"context"
 	"errors"
+	"github.com/eneskzlcn/currency-conversion-service/app/message"
 	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"go.uber.org/zap"
 	"time"
@@ -17,7 +18,7 @@ type Repository interface {
 	CreateUserConversion(ctx context.Context, dto CreateUserConversionDTO) (model.UserCurrencyConversion, error)
 }
 type RabbitmqProducer interface {
-	PushConversionCreatedMessage(message CurrencyConvertedMessage) error
+	PushConversionCreatedMessage(message message.CurrencyConvertedMessage) error
 }
 
 type service struct {
@@ -65,7 +66,7 @@ func (s *service) ConvertCurrencies(ctx context.Context, userID int, request Cur
 		s.logger.Error(err)
 		return false, err
 	}
-	err = s.rabbitmqProducer.PushConversionCreatedMessage(CurrencyConvertedMessage{
+	err = s.rabbitmqProducer.PushConversionCreatedMessage(message.CurrencyConvertedMessage{
 		UserID:                   userID,
 		FromCurrency:             currencyConversion.FromCurrency,
 		ToCurrency:               currencyConversion.ToCurrency,

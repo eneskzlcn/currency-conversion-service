@@ -3,6 +3,7 @@ package wallet
 import (
 	"context"
 	"errors"
+	"github.com/eneskzlcn/currency-conversion-service/app/message"
 	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"go.uber.org/zap"
 )
@@ -12,6 +13,7 @@ type Repository interface {
 	GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error)
 	AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error)
 	IsUserWithUserIDExists(ctx context.Context, userID int) (bool, error)
+	TransferBalancesBetweenUserWallets(ctx context.Context, dto TransferBalanceBetweenUserWalletsDTO) error
 }
 
 type service struct {
@@ -49,4 +51,8 @@ func (s *service) GetUserBalanceOnGivenCurrency(ctx context.Context, userID int,
 func (s *service) AdjustUserBalanceOnGivenCurrency(ctx context.Context,
 	userID int, currency string, balance float32) (bool, error) {
 	return s.repository.AdjustUserBalanceOnGivenCurrency(ctx, userID, currency, balance)
+}
+func (s *service) TransferBalancesBetweenUserWallets(ctx context.Context, msg message.CurrencyConvertedMessage) error {
+	transferDTO := ToTransferBalanceBetweenUserWalletsDTO(msg)
+	return s.repository.TransferBalancesBetweenUserWallets(ctx, transferDTO)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/conversion"
+	"github.com/eneskzlcn/currency-conversion-service/app/message"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/conversion"
 	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/golang/mock/gomock"
@@ -106,7 +107,7 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 
 		senderBalanceDecAmount := givenConversionOfferReq.Balance
 		receiverBalanceIncAmount := givenConversionOfferReq.Balance * expectedUserActiveExchangeOffer.ExchangeRate
-		currencyConvertedMessage := conversion.CurrencyConvertedMessage{
+		currencyConvertedMessage := message.CurrencyConvertedMessage{
 			UserID:                   userID,
 			FromCurrency:             expectedUserActiveExchangeOffer.FromCurrency,
 			ToCurrency:               expectedUserActiveExchangeOffer.ToCurrency,
@@ -164,7 +165,7 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 		senderBalanceDecAmount := givenConversionOfferReq.Balance
 		receiverBalanceIncAmount := givenConversionOfferReq.Balance * expectedUserActiveExchangeOffer.ExchangeRate
 
-		currencyConvertedMessage := conversion.CurrencyConvertedMessage{
+		currencyConvertedMessage := message.CurrencyConvertedMessage{
 			UserID:                   userID,
 			FromCurrency:             expectedUserActiveExchangeOffer.FromCurrency,
 			ToCurrency:               expectedUserActiveExchangeOffer.ToCurrency,
