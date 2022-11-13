@@ -13,18 +13,10 @@ definitions:
     type: object
   conversion.CurrencyConversionOfferRequest:
     properties:
-      balance:
-        type: number
-      created_at:
-        type: string
-      exchange_rate:
-        type: number
-      expires_at:
+      exchange_rate_offer_id:
         type: integer
-      from_currency:
-        type: string
-      to_currency:
-        type: string
+      senderBalanceDecAmount:
+        type: number
     type: object
   exchange.ExchangeRateRequest:
     properties:
@@ -35,16 +27,8 @@ definitions:
     type: object
   exchange.ExchangeRateResponse:
     properties:
-      created_at:
-        type: string
-      exchange_rate:
-        type: number
-      expires_at:
+      exchange_rate_offer_id:
         type: integer
-      from_currency:
-        type: string
-      to_currency:
-        type: string
     type: object
   httperror.HttpError:
     properties:
@@ -140,7 +124,7 @@ paths:
       tags:
       - Conversion
   /exchange/rate:
-    get:
+    post:
       consumes:
       - application/json
       description: creates an exchange rate offer for given currencies

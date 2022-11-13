@@ -29,7 +29,7 @@ func NewHttpHandler(service Service, guard AuthGuard, logger *zap.SugaredLogger)
 //@Summary Accepts currency conversion offer
 //@Description convert currencies by given conversion offer
 //@Param conversionOffer body CurrencyConversionOfferRequest true "body params"
-//@Param accessToken header string true "header params"
+//@Param Token header string true "header params"
 // @Tags Conversion
 //@Accept  json
 //@Produce  json

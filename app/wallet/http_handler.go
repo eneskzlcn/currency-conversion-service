@@ -36,7 +36,7 @@ func NewHttpHandler(service Service, guard AuthGuard, logger *zap.SugaredLogger)
 // @Tags Wallet
 //@Accept  json
 //@Produce  json
-//@Param accessToken header string true "header params"
+//@Param Token header string true "header params"
 //@Success 200 {object} UserWalletAccountsResponse
 //@Failure 400 {object} httperror.HttpError
 //@Failure 404

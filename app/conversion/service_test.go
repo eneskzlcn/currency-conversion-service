@@ -199,6 +199,7 @@ func createServiceWithMockWalletServiceAndConversionRepository(t *testing.T) (co
 	mockWalletService := mocks.NewMockWalletService(ctrl)
 	mockConversionRepo := mocks.NewMockRepository(ctrl)
 	mockRabbitmqProducer := mocks.NewMockRabbitmqProducer(ctrl)
+	mockUserBalanceAdequacyPolicy := mocks.NewMockUserBalanceAdequacyPolicy(ctrl)
 	return conversion.NewService(mockWalletService, zap.S(), mockConversionRepo,
-		mockRabbitmqProducer), mockWalletService, mockConversionRepo, mockRabbitmqProducer
+		mockRabbitmqProducer, mockUserBalanceAdequacyPolicy), mockWalletService, mockConversionRepo, mockRabbitmqProducer
 }

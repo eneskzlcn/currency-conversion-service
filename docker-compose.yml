@@ -21,8 +21,8 @@ services:
       - "15672:15672"
       - "6001:5672"
     environment:
-      - RABBITMQ_DEFAULT_USER=user
-      - RABBITMQ_DEFAULT_PASS=password
+      - RABBITMQ_DEFAULT_USER=currency-conversion
+      - RABBITMQ_DEFAULT_PASS=currency-conversion
     networks:
       - currency-network
   app:

@@ -25,11 +25,11 @@ func NewHttpHandler(service Service, guard AuthGuard, logger *zap.SugaredLogger)
 	return &httpHandler{service: service, authGuard: guard, logger: logger}
 }
 
-//GetExchangeRate godoc
+//GetExchangeRateOffer godoc
 //@Summary Create an exchange rate offer
 //@Description creates an exchange rate offer for given currencies
 //@Param exchangeRateRequest body ExchangeRateRequest true "body params"
-//@Param accessToken header string true "header params"
+//@Param Token header string true "header params"
 // @Tags Exchange
 //@Accept  json
 //@Produce  json

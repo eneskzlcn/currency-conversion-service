@@ -32,6 +32,7 @@ generate-mocks:
 	mockgen -destination=app/mocks/exchange/mock_exchange_repository.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/exchange Repository
 	mockgen -destination=app/mocks/conversion/mock_conversion_service.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion Service
 	mockgen -destination=app/mocks/conversion/mock_auth_guard.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion AuthGuard
+	mockgen -destination=app/mocks/conversion/mock_user_balance_adequacy_policy.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion UserBalanceAdequacyPolicy
 	mockgen -destination=app/mocks/conversion/mock_wallet_service.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion WalletService
 	mockgen -destination=app/mocks/conversion/mock_rabbitmq_producer.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion RabbitmqProducer
 	mockgen -destination=app/mocks/conversion/mock_conversion_repository.go -package mocks github.com/eneskzlcn/currency-conversion-service/app/conversion Repository

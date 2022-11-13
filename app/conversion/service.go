@@ -20,20 +20,29 @@ type Repository interface {
 type RabbitmqProducer interface {
 	PushConversionCreatedMessage(message message.CurrencyConvertedMessage) error
 }
-
+type UserBalanceAdequacyPolicy interface {
+	IsAllowed(userBalance, conversionBalance float32) error
+}
 type service struct {
-	walletService    WalletService
-	logger           *zap.SugaredLogger
-	repository       Repository
-	rabbitmqProducer RabbitmqProducer
+	walletService             WalletService
+	logger                    *zap.SugaredLogger
+	repository                Repository
+	rabbitmqProducer          RabbitmqProducer
+	userBalanceAdequacyPolicy UserBalanceAdequacyPolicy
 }
 
 func NewService(walletService WalletService, logger *zap.SugaredLogger, repository Repository,
-	rabbitmqProducer RabbitmqProducer) *service {
+	rabbitmqProducer RabbitmqProducer, policy UserBalanceAdequacyPolicy) *service {
 	if walletService == nil {
 		return nil
 	}
-	return &service{walletService: walletService, logger: logger, repository: repository, rabbitmqProducer: rabbitmqProducer}
+	return &service{
+		walletService:             walletService,
+		logger:                    logger,
+		repository:                repository,
+		rabbitmqProducer:          rabbitmqProducer,
+		userBalanceAdequacyPolicy: policy,
+	}
 }
 func (s *service) ConvertCurrencies(ctx context.Context, userID int, request CurrencyConversionOfferRequest) (bool, error) {
 	exchangeRateOffer, err := s.repository.GetExchangeOfferByID(ctx, GetExchangeRateOfferDTO{
@@ -89,7 +98,10 @@ func (s *service) isUserHasEnoughBalanceToMakeConversion(ctx context.Context, us
 	if err != nil {
 		return false, err
 	}
-	if userBalanceInCurrencyFrom < conversionBalance {
+	//if userBalanceInCurrencyFrom < conversionBalance {
+	//	return false, errors.New(NotEnoughBalanceForConversionOffer)
+	//}
+	if err = s.userBalanceAdequacyPolicy.IsAllowed(userBalanceInCurrencyFrom, conversionBalance); err != nil {
 		return false, errors.New(NotEnoughBalanceForConversionOffer)
 	}
 	return true, nil

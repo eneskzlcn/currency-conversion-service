@@ -122,7 +122,7 @@ const docTemplate = `{
             }
         },
         "/exchange/rate": {
-            "get": {
+            "post": {
                 "description": "creates an exchange rate offer for given currencies",
                 "consumes": [
                     "application/json"
@@ -280,23 +280,11 @@ const docTemplate = `{
         "conversion.CurrencyConversionOfferRequest": {
             "type": "object",
             "properties": {
-                "balance": {
-                    "type": "number"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "exchange_rate": {
-                    "type": "number"
-                },
-                "expires_at": {
+                "exchange_rate_offer_id": {
                     "type": "integer"
                 },
-                "from_currency": {
-                    "type": "string"
-                },
-                "to_currency": {
-                    "type": "string"
+                "senderBalanceDecAmount": {
+                    "type": "number"
                 }
             }
         },
@@ -314,20 +302,8 @@ const docTemplate = `{
         "exchange.ExchangeRateResponse": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "exchange_rate": {
-                    "type": "number"
-                },
-                "expires_at": {
+                "exchange_rate_offer_id": {
                     "type": "integer"
-                },
-                "from_currency": {
-                    "type": "string"
-                },
-                "to_currency": {
-                    "type": "string"
                 }
             }
         },
