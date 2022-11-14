@@ -85,7 +85,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "header params",
-                        "name": "accessToken",
+                        "name": "Token",
                         "in": "header",
                         "required": true
                     }
@@ -147,7 +147,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "header params",
-                        "name": "accessToken",
+                        "name": "Token",
                         "in": "header",
                         "required": true
                     }
@@ -220,7 +220,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "header params",
-                        "name": "accessToken",
+                        "name": "Token",
                         "in": "header",
                         "required": true
                     }
@@ -280,11 +280,11 @@ const docTemplate = `{
         "conversion.CurrencyConversionOfferRequest": {
             "type": "object",
             "properties": {
+                "balance": {
+                    "type": "number"
+                },
                 "exchange_rate_offer_id": {
                     "type": "integer"
-                },
-                "senderBalanceDecAmount": {
-                    "type": "number"
                 }
             }
         },

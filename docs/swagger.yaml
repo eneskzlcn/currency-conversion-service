@@ -13,10 +13,10 @@ definitions:
     type: object
   conversion.CurrencyConversionOfferRequest:
     properties:
+      balance:
+        type: number
       exchange_rate_offer_id:
         type: integer
-      senderBalanceDecAmount:
-        type: number
     type: object
   exchange.ExchangeRateRequest:
     properties:
@@ -96,7 +96,7 @@ paths:
           $ref: '#/definitions/conversion.CurrencyConversionOfferRequest'
       - description: header params
         in: header
-        name: accessToken
+        name: Token
         required: true
         type: string
       produces:
@@ -137,7 +137,7 @@ paths:
           $ref: '#/definitions/exchange.ExchangeRateRequest'
       - description: header params
         in: header
-        name: accessToken
+        name: Token
         required: true
         type: string
       produces:
@@ -185,7 +185,7 @@ paths:
       parameters:
       - description: header params
         in: header
-        name: accessToken
+        name: Token
         required: true
         type: string
       produces:

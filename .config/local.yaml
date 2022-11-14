@@ -7,6 +7,8 @@ DB_NAME: "currency"
 DB_HOST: "localhost"
 DB_PORT: "5435"
 
+SERVER_PORT: "4000"
+
 RABBITMQ_USERNAME: "currency-conversion"
 RABBITMQ_PASSWORD: "currency-conversion"
 RABBITMQ_PORT: "6001"

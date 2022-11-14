@@ -3,6 +3,7 @@ package conversion
 import (
 	"context"
 	"errors"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/logutil"
 	"github.com/eneskzlcn/currency-conversion-service/app/message"
 	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"go.uber.org/zap"
@@ -11,7 +12,6 @@ import (
 
 type WalletService interface {
 	GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error)
-	AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error)
 }
 type Repository interface {
 	GetExchangeOfferByID(ctx context.Context, dto GetExchangeRateOfferDTO) (model.ExchangeRateOffer, error)
@@ -23,6 +23,12 @@ type RabbitmqProducer interface {
 type UserBalanceAdequacyPolicy interface {
 	IsAllowed(userBalance, conversionBalance float32) error
 }
+type ServiceOptions struct {
+	WalletService    WalletService
+	Logger           *zap.SugaredLogger
+	Repository       Repository
+	RabbitmqProducer RabbitmqProducer
+}
 type service struct {
 	walletService             WalletService
 	logger                    *zap.SugaredLogger
@@ -31,49 +37,41 @@ type service struct {
 	userBalanceAdequacyPolicy UserBalanceAdequacyPolicy
 }
 
-func NewService(walletService WalletService, logger *zap.SugaredLogger, repository Repository,
-	rabbitmqProducer RabbitmqProducer, policy UserBalanceAdequacyPolicy) *service {
-	if walletService == nil {
-		return nil
-	}
+func NewService(opts *ServiceOptions) *service {
 	return &service{
-		walletService:             walletService,
-		logger:                    logger,
-		repository:                repository,
-		rabbitmqProducer:          rabbitmqProducer,
-		userBalanceAdequacyPolicy: policy,
+		walletService:             opts.WalletService,
+		logger:                    opts.Logger,
+		repository:                opts.Repository,
+		rabbitmqProducer:          opts.RabbitmqProducer,
+		userBalanceAdequacyPolicy: NewUserBalanceAdequacyPolicy(),
 	}
 }
 func (s *service) ConvertCurrencies(ctx context.Context, userID int, request CurrencyConversionOfferRequest) (bool, error) {
 	exchangeRateOffer, err := s.repository.GetExchangeOfferByID(ctx, GetExchangeRateOfferDTO{
 		exchangeRateOfferID: request.ExchangeRateOfferID})
 	if err != nil {
-		s.logger.Debug(err)
-		return false, err
+		return false, logutil.LogThenReturn(s.logger, err)
 	}
 	if s.isCurrencyConversionOfferExpired(exchangeRateOffer.OfferExpiresAt) {
-		s.logger.Debug(CurrencyConversionOfferExpired)
-		return false, errors.New(CurrencyConversionOfferExpired)
+		return false, logutil.LogThenReturn(s.logger, errors.New(CurrencyConversionOfferExpired))
 	}
 	isUserHasEnoughBalance, err := s.isUserHasEnoughBalanceToMakeConversion(ctx,
 		userID, exchangeRateOffer.FromCurrency, request.Balance)
 	if err != nil {
-		s.logger.Debug(err)
-		return false, err
+		return false, logutil.LogThenReturn(s.logger, err)
 	}
 	if !isUserHasEnoughBalance {
-		s.logger.Debug(NotEnoughBalanceForConversionOffer)
-		return false, errors.New(NotEnoughBalanceForConversionOffer)
+		return false, logutil.LogThenReturn(s.logger, errors.New(NotEnoughBalanceForConversionOffer))
 	}
 	currencyConversion, err := s.repository.CreateUserConversion(ctx, CreateUserConversionDTO{
-		userID:                 userID,
-		fromCurrency:           exchangeRateOffer.FromCurrency,
-		toCurrency:             exchangeRateOffer.ToCurrency,
-		senderBalanceDecAmount: request.Balance,
+		userID:                   userID,
+		fromCurrency:             exchangeRateOffer.FromCurrency,
+		toCurrency:               exchangeRateOffer.ToCurrency,
+		senderBalanceDecAmount:   request.Balance * -1,
+		receiverBalanceIncAmount: request.Balance * exchangeRateOffer.ExchangeRate,
 	})
 	if err != nil {
-		s.logger.Error(err)
-		return false, err
+		return false, logutil.LogThenReturn(s.logger, err)
 	}
 	err = s.rabbitmqProducer.PushConversionCreatedMessage(message.CurrencyConvertedMessage{
 		UserID:                   userID,
@@ -83,8 +81,7 @@ func (s *service) ConvertCurrencies(ctx context.Context, userID int, request Cur
 		ReceiverBalanceIncAmount: currencyConversion.ReceiverBalanceIncAmount,
 	})
 	if err != nil {
-		s.logger.Debug(err)
-		return false, err
+		return false, logutil.LogThenReturn(s.logger, err)
 	}
 	return true, nil
 }
@@ -98,9 +95,7 @@ func (s *service) isUserHasEnoughBalanceToMakeConversion(ctx context.Context, us
 	if err != nil {
 		return false, err
 	}
-	//if userBalanceInCurrencyFrom < conversionBalance {
-	//	return false, errors.New(NotEnoughBalanceForConversionOffer)
-	//}
+
 	if err = s.userBalanceAdequacyPolicy.IsAllowed(userBalanceInCurrencyFrom, conversionBalance); err != nil {
 		return false, errors.New(NotEnoughBalanceForConversionOffer)
 	}

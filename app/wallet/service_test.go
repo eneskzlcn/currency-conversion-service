@@ -14,8 +14,6 @@ import (
 )
 
 type Service interface {
-	AdjustUserBalanceOnGivenCurrency(ctx context.Context,
-		userID int, currency string, balance float32) (bool, error)
 	GetUserWalletAccounts(ctx context.Context, userID int) (wallet.UserWalletAccountsResponse, error)
 	GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error)
 	TransferBalancesBetweenUserWallets(ctx context.Context, msg message.CurrencyConvertedMessage) error
@@ -90,33 +88,6 @@ func TestService_GetUserBalanceOnGivenCurrency(t *testing.T) {
 		balance, err := service.GetUserBalanceOnGivenCurrency(context.TODO(), userID, currency)
 		assert.Nil(t, err)
 		assert.Equal(t, balance, expectedBalance)
-	})
-}
-
-func TestService_AdjustUserBalanceOnGivenCurrency(t *testing.T) {
-	service, mockWalletRepo := createServiceWithMockWalletRepository(t)
-
-	t.Run("given not existing wallet with user id and currency then it should return false", func(t *testing.T) {
-		userID := -1
-		currency := "T"
-		balance := float32(200)
-		mockWalletRepo.EXPECT().AdjustUserBalanceOnGivenCurrency(gomock.Any(), userID,
-			currency, balance).Return(false, errors.New(""))
-		success, err := service.AdjustUserBalanceOnGivenCurrency(context.TODO(),
-			userID, currency, balance)
-		assert.NotNil(t, err)
-		assert.False(t, success)
-	})
-	t.Run("given existing wallet with user id and currency then it should return true", func(t *testing.T) {
-		userID := -1
-		currency := "T"
-		balance := float32(200)
-		mockWalletRepo.EXPECT().AdjustUserBalanceOnGivenCurrency(gomock.Any(), userID,
-			currency, balance).Return(true, nil)
-		success, err := service.AdjustUserBalanceOnGivenCurrency(context.TODO(),
-			userID, currency, balance)
-		assert.Nil(t, err)
-		assert.True(t, success)
 	})
 }
 

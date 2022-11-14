@@ -36,21 +36,6 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
-// AdjustUserBalanceOnGivenCurrency mocks base method.
-func (m *MockRepository) AdjustUserBalanceOnGivenCurrency(arg0 context.Context, arg1 int, arg2 string, arg3 float32) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AdjustUserBalanceOnGivenCurrency", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AdjustUserBalanceOnGivenCurrency indicates an expected call of AdjustUserBalanceOnGivenCurrency.
-func (mr *MockRepositoryMockRecorder) AdjustUserBalanceOnGivenCurrency(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AdjustUserBalanceOnGivenCurrency", reflect.TypeOf((*MockRepository)(nil).AdjustUserBalanceOnGivenCurrency), arg0, arg1, arg2, arg3)
-}
-
 // GetUserBalanceOnGivenCurrency mocks base method.
 func (m *MockRepository) GetUserBalanceOnGivenCurrency(arg0 context.Context, arg1 int, arg2 string) (float32, error) {
 	m.ctrl.T.Helper()

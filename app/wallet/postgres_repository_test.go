@@ -3,6 +3,7 @@ package wallet_test
 import (
 	"context"
 	"errors"
+	sqlMock "github.com/DATA-DOG/go-sqlmock"
 	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/eneskzlcn/currency-conversion-service/app/wallet"
 	"github.com/eneskzlcn/currency-conversion-service/postgres"
@@ -106,36 +107,6 @@ func TestRepository_GetUserBalanceOnGivenCurrency(t *testing.T) {
 		assert.Equal(t, expectedBalance, balance)
 	})
 }
-func TestRepository_AdjustUserBalanceOnGivenCurrency(t *testing.T) {
-	db, sqlmock := postgres.NewMockPostgres()
-	repository := wallet.NewPostgresRepository(db, zap.S())
-	query := regexp.QuoteMeta(`
-	UPDATE user_wallets 
-	SET balance = balance + $1 
-	WHERE user_id = $2 AND currency_code = $3`)
-
-	t.Run("given existing wallet with user_id and currency_code then it should return true", func(t *testing.T) {
-		userID := 2
-		currency := "TRY"
-		balance := float32(200)
-		sqlmock.ExpectQuery(query).WithArgs(balance, userID, currency).WillReturnRows(sqlmock.NewRows([]string{}))
-		success, err := repository.AdjustUserBalanceOnGivenCurrency(context.TODO(),
-			userID, currency, balance)
-		assert.Nil(t, sqlmock.ExpectationsWereMet())
-		assert.Nil(t, err)
-		assert.True(t, success)
-	})
-	t.Run("given non existing wallet with user_id and currency_code then  it should return false", func(t *testing.T) {
-		userID := -1
-		currency := "TsxY"
-		balance := float32(500)
-		sqlmock.ExpectQuery(query).WithArgs(balance, userID, currency).WillReturnError(errors.New("wallet not exist"))
-		success, err := repository.AdjustUserBalanceOnGivenCurrency(context.TODO(),
-			userID, currency, balance)
-		assert.NotNil(t, err)
-		assert.False(t, success)
-	})
-}
 
 func Test_postgresRepository_TransferBalancesBetweenUserWallets(t *testing.T) {
 	db, sqlmock := postgres.NewMockPostgres()
@@ -153,7 +124,7 @@ func Test_postgresRepository_TransferBalancesBetweenUserWallets(t *testing.T) {
 	})
 	t.Run("given error occurred when updating sender wallet then it should return error", func(t *testing.T) {
 		sqlmock.ExpectBegin()
-		sqlmock.ExpectQuery(query).
+		sqlmock.ExpectExec(query).
 			WithArgs(givenDTO.SenderBalanceDecAmount(), givenDTO.UserID(), givenDTO.FromCurrency())
 		err := repository.TransferBalancesBetweenUserWallets(context.TODO(), givenDTO)
 		assert.Nil(t, sqlmock.ExpectationsWereMet())
@@ -161,7 +132,7 @@ func Test_postgresRepository_TransferBalancesBetweenUserWallets(t *testing.T) {
 	})
 	t.Run("given error occurred when updating sender wallet then it should return error", func(t *testing.T) {
 		sqlmock.ExpectBegin()
-		sqlmock.ExpectQuery(query).
+		sqlmock.ExpectExec(query).
 			WithArgs(givenDTO.SenderBalanceDecAmount(), givenDTO.UserID(), givenDTO.FromCurrency()).
 			WillReturnError(errors.New(""))
 		sqlmock.ExpectRollback()
@@ -171,12 +142,13 @@ func Test_postgresRepository_TransferBalancesBetweenUserWallets(t *testing.T) {
 	})
 	t.Run("given error occurred when updating receiver wallet then it should return error", func(t *testing.T) {
 		sqlmock.ExpectBegin()
-		sqlmock.ExpectQuery(query).
+		sqlmock.ExpectExec(query).
 			WithArgs(givenDTO.SenderBalanceDecAmount(), givenDTO.UserID(), givenDTO.FromCurrency()).
-			WillReturnRows(sqlmock.NewRows([]string{}))
-		sqlmock.ExpectQuery(query).
+			WillReturnResult(sqlMock.NewResult(1, 1))
+		sqlmock.ExpectExec(query).
 			WithArgs(givenDTO.ReceiverBalanceIncAmount(), givenDTO.UserID(), givenDTO.ToCurrency()).
 			WillReturnError(errors.New(""))
+
 		sqlmock.ExpectRollback()
 		err := repository.TransferBalancesBetweenUserWallets(context.TODO(), givenDTO)
 		assert.Nil(t, sqlmock.ExpectationsWereMet())
@@ -184,27 +156,34 @@ func Test_postgresRepository_TransferBalancesBetweenUserWallets(t *testing.T) {
 	})
 	t.Run("given successfully completed transaction process but error occured on committing then it should return error", func(t *testing.T) {
 		sqlmock.ExpectBegin()
-		sqlmock.ExpectQuery(query).
+
+		sqlmock.ExpectExec(query).
 			WithArgs(givenDTO.SenderBalanceDecAmount(), givenDTO.UserID(), givenDTO.FromCurrency()).
-			WillReturnRows(sqlmock.NewRows([]string{}))
-		sqlmock.ExpectQuery(query).
+			WillReturnResult(sqlMock.NewResult(1, 1))
+
+		sqlmock.ExpectExec(query).
 			WithArgs(givenDTO.ReceiverBalanceIncAmount(), givenDTO.UserID(), givenDTO.ToCurrency()).
-			WillReturnRows(sqlmock.NewRows([]string{}))
+			WillReturnResult(sqlMock.NewResult(1, 1))
+
 		sqlmock.ExpectCommit().WillReturnError(errors.New(""))
+
 		err := repository.TransferBalancesBetweenUserWallets(context.TODO(), givenDTO)
 		assert.Nil(t, sqlmock.ExpectationsWereMet())
 		assert.NotNil(t, err)
 	})
 	t.Run("given successfully completed transaction process then it should commit it and return nil", func(t *testing.T) {
 		sqlmock.ExpectBegin()
-		sqlmock.ExpectQuery(query).
-			WithArgs(givenDTO.SenderBalanceDecAmount(), givenDTO.UserID(), givenDTO.FromCurrency()).
-			WillReturnRows(sqlmock.NewRows([]string{}))
-		sqlmock.ExpectQuery(query).
-			WithArgs(givenDTO.ReceiverBalanceIncAmount(), givenDTO.UserID(), givenDTO.ToCurrency()).
-			WillReturnRows(sqlmock.NewRows([]string{}))
+		sqlmock.ExpectExec(query).WithArgs(givenDTO.SenderBalanceDecAmount(),
+			givenDTO.UserID(), givenDTO.FromCurrency()).
+			WillReturnResult(sqlMock.NewResult(1, -1))
+
+		sqlmock.ExpectExec(query).WithArgs(givenDTO.ReceiverBalanceIncAmount(),
+			givenDTO.UserID(), givenDTO.ToCurrency()).
+			WillReturnResult(sqlMock.NewResult(1, -1))
 		sqlmock.ExpectCommit()
+
 		err := repository.TransferBalancesBetweenUserWallets(context.TODO(), givenDTO)
+
 		assert.Nil(t, sqlmock.ExpectationsWereMet())
 		assert.Nil(t, err)
 	})

@@ -43,7 +43,12 @@ func run() error {
 	walletRepository := wallet.NewPostgresRepository(db, logger)
 	walletService := wallet.NewService(walletRepository, logger)
 	walletHttpHandler := wallet.NewHttpHandler(walletService, authGuard, logger)
-	walletRabbitmqConsumer := wallet.NewRabbitmqConsumer(rabbitmqClient, logger, walletService, appConfig.Rabbitmq)
+	walletRabbitmqConsumer := wallet.NewRabbitmqConsumer(&wallet.ConsumerOptions{
+		Client:  rabbitmqClient,
+		Logger:  logger,
+		Service: walletService,
+		Config:  appConfig.Rabbitmq,
+	})
 
 	exchangeRepository := exchange.NewPostgresRepository(db, logger)
 	exchangeService := exchange.NewService(exchangeRepository, logger)
@@ -51,7 +56,13 @@ func run() error {
 
 	conversionRepository := conversion.NewPostgresRepository(db, logger)
 	conversionRabbitmqProducer := conversion.NewRabbitMqProducer(rabbitmqClient, appConfig.Rabbitmq)
-	conversionService := conversion.NewService(walletService, logger, conversionRepository, conversionRabbitmqProducer)
+
+	conversionService := conversion.NewService(&conversion.ServiceOptions{
+		WalletService:    walletService,
+		Logger:           logger,
+		Repository:       conversionRepository,
+		RabbitmqProducer: conversionRabbitmqProducer,
+	})
 	conversionHttpHandler := conversion.NewHttpHandler(conversionService, authGuard, logger)
 
 	server := server.New([]server.Handler{

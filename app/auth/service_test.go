@@ -60,7 +60,7 @@ func Test_ValidateToken(t *testing.T) {
 		ATExpirationMinutes: 1,
 	}
 	ctrl := gomock.NewController(t)
-	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
+	mockAuthRepository := mocks.NewMockRepository(ctrl)
 	authService := auth.NewService(config, mockAuthRepository, zap.S())
 
 	t.Run("given valid signed token then it should return nil when ValidateToken called", func(t *testing.T) {
@@ -122,18 +122,18 @@ func TestService_ExtractUserIDFromToken(t *testing.T) {
 	})
 }
 
-func newAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (auth.Service, *mocks.MockAuthRepository) {
+func newAuthServiceAndMockRepoWithDefaultConfig(t *testing.T) (auth.Service, *mocks.MockRepository) {
 	givenConfig := config.Jwt{
 		ATPrivateKey:        "private",
 		ATExpirationMinutes: 200,
 	}
 	ctrl := gomock.NewController(t)
-	mockAuthRepository := mocks.NewMockAuthRepository(ctrl)
+	mockAuthRepository := mocks.NewMockRepository(ctrl)
 	return auth.NewService(givenConfig, mockAuthRepository, zap.S()), mockAuthRepository
 }
-func newAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (auth.Service, *mocks.MockAuthRepository) {
+func newAuthServiceAndMockRepoWithGivenConfig(t *testing.T, config config.Jwt) (auth.Service, *mocks.MockRepository) {
 	ctrl := gomock.NewController(t)
-	MockAuthRepository := mocks.NewMockAuthRepository(ctrl)
+	MockAuthRepository := mocks.NewMockRepository(ctrl)
 	return auth.NewService(config, MockAuthRepository, zap.S()), MockAuthRepository
 }
 func createMockValidToken(config config.Jwt, user model.User) (string, error) {

@@ -3,7 +3,9 @@ package rabbitmq
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/logutil"
 	"github.com/eneskzlcn/currency-conversion-service/config"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
@@ -16,28 +18,32 @@ type client struct {
 }
 
 func NewClient(config config.RabbitMQ, logger *zap.SugaredLogger) *client {
-	if logger == nil {
-		fmt.Println("given *zap.SugaredLogger is nil")
-		return nil
-	}
 	con, err := amqp.Dial(createConnectionUrl(config))
 	if err != nil {
 		logger.Error("error occurred when connecting to rabbitmq server")
 		return nil
 	}
-	ch, err := con.Channel()
+	rabbitmqClient := &client{connection: con, logger: logger}
+	if err = rabbitmqClient.initializeQueues(config); err != nil {
+		return nil
+	}
+	return rabbitmqClient
+}
+func (c *client) initializeQueues(config config.RabbitMQ) error {
+	ch, err := c.connection.Channel()
+	if err != nil {
+		return err
+	}
 	defer ch.Close()
+
 	for _, queue := range config.Queues() {
 		_, err = ch.QueueDeclare(queue, false, false, false, false, nil)
 		if err != nil {
-			logger.Error("error when declaring new queue")
-			return nil
+			return logutil.LogThenReturn(c.logger, errors.New("error when declaring new queue"))
 		}
 	}
-
-	return &client{connection: con, logger: logger}
+	return nil
 }
-
 func (c *client) PushMessage(message any, queue string) error {
 	messageBytes, err := json.Marshal(message)
 	if err != nil {
@@ -58,19 +64,18 @@ func (c *client) PushMessage(message any, queue string) error {
 			Body:        messageBytes,
 		})
 	if err != nil {
-		c.logger.Error("error occurred when publishing the message ")
-		return err
+		return logutil.LogThenReturn(c.logger, err)
 	}
 	return nil
 }
 
 func (c *client) Consume(messageReceived chan []byte, consumer string, queue string) {
 	ch, err := c.connection.Channel()
-	defer ch.Close()
 	if err != nil {
 		return
 	}
-	msgs, err := ch.Consume(
+	defer ch.Close()
+	messages, _ := ch.Consume(
 		queue,
 		consumer,
 		true,
@@ -81,8 +86,8 @@ func (c *client) Consume(messageReceived chan []byte, consumer string, queue str
 	)
 	var forever chan struct{}
 	go func() {
-		for d := range msgs {
-			messageReceived <- d.Body
+		for msg := range messages {
+			messageReceived <- msg.Body
 		}
 	}()
 	<-forever

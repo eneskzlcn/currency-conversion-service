@@ -105,7 +105,7 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 			GetUserBalanceOnGivenCurrency(gomock.Any(), userID, expectedUserActiveExchangeOffer.FromCurrency).
 			Return(float32(500), nil)
 
-		senderBalanceDecAmount := givenConversionOfferReq.Balance
+		senderBalanceDecAmount := -1 * givenConversionOfferReq.Balance
 		receiverBalanceIncAmount := givenConversionOfferReq.Balance * expectedUserActiveExchangeOffer.ExchangeRate
 		currencyConvertedMessage := message.CurrencyConvertedMessage{
 			UserID:                   userID,
@@ -123,8 +123,8 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 			UserID:                   userID,
 			FromCurrency:             expectedUserActiveExchangeOffer.FromCurrency,
 			ToCurrency:               expectedUserActiveExchangeOffer.ToCurrency,
-			SenderBalanceDecAmount:   givenConversionOfferReq.Balance,
-			ReceiverBalanceIncAmount: givenConversionOfferReq.Balance * expectedUserActiveExchangeOffer.ExchangeRate,
+			SenderBalanceDecAmount:   senderBalanceDecAmount,
+			ReceiverBalanceIncAmount: receiverBalanceIncAmount,
 			CreatedAt:                time.Time{},
 		}
 		mockConversionRepo.EXPECT().CreateUserConversion(gomock.Any(), createUserConversionDTO).
@@ -180,8 +180,8 @@ func TestService_CreateCurrencyConversion(t *testing.T) {
 			UserID:                   userID,
 			FromCurrency:             expectedUserActiveExchangeOffer.FromCurrency,
 			ToCurrency:               expectedUserActiveExchangeOffer.ToCurrency,
-			SenderBalanceDecAmount:   givenConversionOfferReq.Balance,
-			ReceiverBalanceIncAmount: givenConversionOfferReq.Balance * expectedUserActiveExchangeOffer.ExchangeRate,
+			SenderBalanceDecAmount:   senderBalanceDecAmount,
+			ReceiverBalanceIncAmount: receiverBalanceIncAmount,
 			CreatedAt:                time.Time{},
 		}
 		mockConversionRepo.EXPECT().CreateUserConversion(gomock.Any(), createUserConversionDTO).
@@ -199,7 +199,6 @@ func createServiceWithMockWalletServiceAndConversionRepository(t *testing.T) (co
 	mockWalletService := mocks.NewMockWalletService(ctrl)
 	mockConversionRepo := mocks.NewMockRepository(ctrl)
 	mockRabbitmqProducer := mocks.NewMockRabbitmqProducer(ctrl)
-	mockUserBalanceAdequacyPolicy := mocks.NewMockUserBalanceAdequacyPolicy(ctrl)
 	return conversion.NewService(mockWalletService, zap.S(), mockConversionRepo,
-		mockRabbitmqProducer, mockUserBalanceAdequacyPolicy), mockWalletService, mockConversionRepo, mockRabbitmqProducer
+		mockRabbitmqProducer), mockWalletService, mockConversionRepo, mockRabbitmqProducer
 }

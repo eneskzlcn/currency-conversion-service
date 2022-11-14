@@ -11,7 +11,6 @@ import (
 type Repository interface {
 	GetUserWalletAccounts(ctx context.Context, userID int) ([]model.UserWallet, error)
 	GetUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string) (float32, error)
-	AdjustUserBalanceOnGivenCurrency(ctx context.Context, userID int, currency string, balance float32) (bool, error)
 	IsUserWithUserIDExists(ctx context.Context, userID int) (bool, error)
 	TransferBalancesBetweenUserWallets(ctx context.Context, dto TransferBalanceBetweenUserWalletsDTO) error
 }
@@ -34,12 +33,11 @@ func (s *service) GetUserWalletAccounts(ctx context.Context, userID int) (UserWa
 		return UserWalletAccountsResponse{}, errors.New(UserWithUserIDNotExists)
 	}
 	userWalletsAccounts, err := s.repository.GetUserWalletAccounts(ctx, userID)
-	s.logger.Debug(userWalletsAccounts)
+
 	if err != nil {
 		return UserWalletAccountsResponse{}, err
 	}
 	userWalletAccountsResponse := UserWalletAccountResponseFromUserWallets(userWalletsAccounts)
-	s.logger.Debug(userWalletAccountsResponse)
 	return userWalletAccountsResponse, nil
 }
 
@@ -48,10 +46,6 @@ func (s *service) GetUserBalanceOnGivenCurrency(ctx context.Context, userID int,
 	return s.repository.GetUserBalanceOnGivenCurrency(ctx, userID, currency)
 }
 
-func (s *service) AdjustUserBalanceOnGivenCurrency(ctx context.Context,
-	userID int, currency string, balance float32) (bool, error) {
-	return s.repository.AdjustUserBalanceOnGivenCurrency(ctx, userID, currency, balance)
-}
 func (s *service) TransferBalancesBetweenUserWallets(ctx context.Context, msg message.CurrencyConvertedMessage) error {
 	transferDTO := ToTransferBalanceBetweenUserWalletsDTO(msg)
 	return s.repository.TransferBalancesBetweenUserWallets(ctx, transferDTO)
