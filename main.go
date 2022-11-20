@@ -61,5 +61,6 @@ func run() error {
 	}, appConfig.Server, logger)
 
 	print("im trying to something new!")
+	print("im trying to something new!")
 	return server.Start()
 }
