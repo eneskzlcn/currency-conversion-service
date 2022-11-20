@@ -60,5 +60,6 @@ func run() error {
 		conversionHttpHandler,
 	}, appConfig.Server, logger)
 
+	print("im trying to something new!")
 	return server.Start()
 }
