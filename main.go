@@ -74,5 +74,6 @@ func run() error {
 
 	go walletRabbitmqConsumer.ConsumeCurrencyConvertedQueue()
 
+	print("im trying to something new!")
 	return server.Start()
 }
