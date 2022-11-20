@@ -3,7 +3,7 @@ package auth_test
 import (
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/auth"
-	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/testhttp"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/auth"
 	"github.com/eneskzlcn/currency-conversion-service/app/model"
 	"github.com/eneskzlcn/currency-conversion-service/config"
@@ -24,7 +24,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 	guard := auth.NewGuard(mockAuthService, zap.S())
 	app := createFiberAppWithAMockProtectedEndpoint(guard)
 
-	t.Run("given valid token then it should call next handler without status unauthorized", func(t *testing.T) {
+	t.Run("given valid token then it should call next handler response", func(t *testing.T) {
 		givenConfig := config.Jwt{
 			ATPrivateKey:        "private",
 			ATExpirationMinutes: 10,
@@ -39,7 +39,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 
 		mockAuthService.EXPECT().ValidateToken(gomock.Any(), token).Return(nil)
 		mockAuthService.EXPECT().ExtractUserIDFromToken(token).Return(givenUser.ID, nil)
-		req := testutil.MakeTestRequestWithoutBodyToProtectedEndpoint(fiber.MethodGet, "/test", token)
+		req := testhttp.MakeRequestToProtectedEndpoint(fiber.MethodGet, "/test", token)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
@@ -48,7 +48,7 @@ func TestProtectWithJWTProtectsTheGivenHandlerWithJWTWhenItAppliedToAHandlerAsMi
 	t.Run("given invalid token then it should return status unauthorized", func(t *testing.T) {
 		invalidToken := "invalidToken"
 		mockAuthService.EXPECT().ValidateToken(gomock.Any(), invalidToken).Return(errors.New("authentication error"))
-		req := testutil.MakeTestRequestWithoutBodyToProtectedEndpoint(fiber.MethodGet, "/test", invalidToken)
+		req := testhttp.MakeRequestToProtectedEndpoint(fiber.MethodGet, "/test", invalidToken)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)

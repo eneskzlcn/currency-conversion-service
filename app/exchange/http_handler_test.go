@@ -3,7 +3,7 @@ package exchange_test
 import (
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/common"
-	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/testhttp"
 	"github.com/eneskzlcn/currency-conversion-service/app/exchange"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/exchange"
 	"github.com/gofiber/fiber/v2"
@@ -24,7 +24,7 @@ func TestHandler_RegisterRoutes(t *testing.T) {
 	mockAuthGuard.EXPECT().ProtectWithJWT(gomock.Any()).Return(func(ctx *fiber.Ctx) error { return nil })
 	httpHandler.RegisterRoutes(app)
 
-	testutil.AssertRouteRegistered(t, app, fiber.MethodGet, "/exchange/rate")
+	testhttp.AssertRouteRegistered(t, app, fiber.MethodGet, "/exchange/rate")
 }
 func TestHandler_GetExchangeRate(t *testing.T) {
 	httpHandler, mockExchangeService, _ := createHandlerWithMockExchangeServiceAndAuthGuard(t)
@@ -39,7 +39,7 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 		app := fiber.New()
 		app.Get("/rate", httpHandler.GetExchangeRateOffer)
 		givenRequest := "notvalidexchangerate"
-		req := testutil.MakeTestRequestWithBody(fiber.MethodGet, "/rate", givenRequest)
+		req := testhttp.MakeRequestWithBody(fiber.MethodGet, "/rate", givenRequest)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
@@ -55,7 +55,7 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 		mockExchangeService.EXPECT().PrepareExchangeRateOffer(gomock.Any(), userID, givenRequest).
 			Return(exchange.ExchangeRateResponse{}, errors.New(""))
 
-		req := testutil.MakeTestRequestWithBody(fiber.MethodGet, "/rate", givenRequest)
+		req := testhttp.MakeRequestWithBody(fiber.MethodGet, "/rate", givenRequest)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
@@ -73,11 +73,11 @@ func TestHandler_GetExchangeRate(t *testing.T) {
 		mockExchangeService.EXPECT().PrepareExchangeRateOffer(gomock.Any(), gomock.Any(), givenRequest).
 			Return(expectedResponse, nil)
 
-		req := testutil.MakeTestRequestWithBody(fiber.MethodGet, "/rate", givenRequest)
+		req := testhttp.MakeRequestWithBody(fiber.MethodGet, "/rate", givenRequest)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusCreated, resp.StatusCode)
-		testutil.AssertBodyEqual(t, resp.Body, expectedResponse)
+		testhttp.AssertBodyEqual(t, resp.Body, expectedResponse)
 	})
 }
 

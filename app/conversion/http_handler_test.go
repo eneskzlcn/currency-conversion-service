@@ -3,7 +3,7 @@ package conversion_test
 import (
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/common"
-	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/testhttp"
 	"github.com/eneskzlcn/currency-conversion-service/app/conversion"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/conversion"
 	"github.com/gofiber/fiber/v2"
@@ -37,7 +37,7 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 			ExchangeRateOfferID: givenExchangeRateOfferID,
 			Balance:             200,
 		}
-		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
+		req := testhttp.MakeRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
@@ -46,7 +46,7 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 		app := fiber.New()
 		app.Post(route, mockAuthMiddleware(httpHandler.CurrencyConversionOffer))
 		givenOfferRequest := "invalidRequest"
-		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
+		req := testhttp.MakeRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
@@ -60,7 +60,7 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 			ExchangeRateOfferID: givenExchangeRateOfferID,
 			Balance:             200,
 		}
-		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
+		req := testhttp.MakeRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		req.Header.Set("userID", strconv.FormatInt(int64(userID), 10))
 		mockConversionService.EXPECT().ConvertCurrencies(gomock.Any(), userID, givenOfferRequest).
 			Return(false, errors.New(""))
@@ -78,7 +78,7 @@ func TestHandler_ConvertCurrencies(t *testing.T) {
 			ExchangeRateOfferID: givenExchangeRateOfferID,
 			Balance:             200,
 		}
-		req := testutil.MakeTestRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
+		req := testhttp.MakeRequestWithBody(fiber.MethodPost, route, givenOfferRequest)
 		req.Header.Set("userID", strconv.FormatInt(int64(userID), 10))
 		mockConversionService.EXPECT().ConvertCurrencies(gomock.Any(), userID, givenOfferRequest).
 			Return(true, nil)
@@ -93,7 +93,7 @@ func TestHandler_RegisterRoutes(t *testing.T) {
 	httpHandler, _, mockAuthGuard := createHandlerWithMockConversionServiceAndAuthGuard(t)
 	mockAuthGuard.EXPECT().ProtectWithJWT(gomock.Any()).Return(func(ctx *fiber.Ctx) error { return nil })
 	httpHandler.RegisterRoutes(app)
-	testutil.AssertRouteRegistered(t, app, fiber.MethodPost, "/conversion/offer")
+	testhttp.AssertRouteRegistered(t, app, fiber.MethodPost, "/conversion/offer")
 
 }
 func createHandlerWithMockConversionServiceAndAuthGuard(t *testing.T) (HttpHandler, *mocks.MockService, *mocks.MockAuthGuard) {

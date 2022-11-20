@@ -3,7 +3,7 @@ package auth_test
 import (
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/auth"
-	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/testhttp"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/auth"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang/mock/gomock"
@@ -24,7 +24,7 @@ func TestHandler_Login(t *testing.T) {
 	app.Post("/login", httpHandler.Login)
 	t.Run("given not valid login request then it should return status bad request", func(t *testing.T) {
 		loginRequestData := "asdf"
-		request := testutil.MakeTestRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
+		request := testhttp.MakeRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
 		resp, err := app.Test(request)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
@@ -36,7 +36,7 @@ func TestHandler_Login(t *testing.T) {
 		}
 		mockAuthService.EXPECT().Tokenize(gomock.Any(), loginRequestData).
 			Return(auth.TokenResponse{}, errors.New("error occurred"))
-		request := testutil.MakeTestRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
+		request := testhttp.MakeRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
 		resp, err := app.Test(request)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
@@ -49,12 +49,12 @@ func TestHandler_Login(t *testing.T) {
 		expectedResponse := auth.TokenResponse{AccessToken: "someaccesstoken"}
 		mockAuthService.EXPECT().Tokenize(gomock.Any(), loginRequestData).
 			Return(expectedResponse, nil)
-		request := testutil.MakeTestRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
+		request := testhttp.MakeRequestWithBody(fiber.MethodPost, "/login", loginRequestData)
 		resp, err := app.Test(request)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusCreated, resp.StatusCode)
 
-		testutil.AssertBodyEqual(t, resp.Body, expectedResponse)
+		testhttp.AssertBodyEqual(t, resp.Body, expectedResponse)
 	})
 }
 func TestRegisterRoutesSuccessfullyRegistersTheEndpointsToTheApp(t *testing.T) {

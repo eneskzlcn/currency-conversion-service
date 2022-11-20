@@ -3,7 +3,7 @@ package wallet_test
 import (
 	"errors"
 	"github.com/eneskzlcn/currency-conversion-service/app/common"
-	"github.com/eneskzlcn/currency-conversion-service/app/common/testutil"
+	"github.com/eneskzlcn/currency-conversion-service/app/common/testhttp"
 	mocks "github.com/eneskzlcn/currency-conversion-service/app/mocks/wallet"
 	"github.com/eneskzlcn/currency-conversion-service/app/wallet"
 	"github.com/gofiber/fiber/v2"
@@ -32,7 +32,7 @@ func TestHandler_GetUserWallets(t *testing.T) {
 	t.Run("not given userID or invalid userID from context then it should return status bad request", func(t *testing.T) {
 		app := fiber.New()
 		app.Get(route, handler.GetUserWalletAccounts)
-		req := testutil.MakeTestRequestWithoutBody(fiber.MethodGet, route)
+		req := testhttp.MakeRequest(fiber.MethodGet, route)
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
@@ -40,7 +40,7 @@ func TestHandler_GetUserWallets(t *testing.T) {
 	t.Run("given valid userID but error occurred on service then it should return status internal server error", func(t *testing.T) {
 		app := fiber.New()
 		app.Get(route, mockAuthMiddleware(handler.GetUserWalletAccounts))
-		req := testutil.MakeTestRequestWithBody(fiber.MethodGet, route, nil)
+		req := testhttp.MakeRequestWithBody(fiber.MethodGet, route, nil)
 
 		mockWalletService.EXPECT().GetUserWalletAccounts(gomock.Any(), userID).
 			Return(wallet.UserWalletAccountsResponse{}, errors.New("error occurred on service"))
@@ -52,7 +52,7 @@ func TestHandler_GetUserWallets(t *testing.T) {
 		app := fiber.New()
 		app.Get(route, mockAuthMiddleware(handler.GetUserWalletAccounts))
 
-		req := testutil.MakeTestRequestWithBody(fiber.MethodGet, route, nil)
+		req := testhttp.MakeRequestWithBody(fiber.MethodGet, route, nil)
 		expectedWalletAccountResp := wallet.UserWalletAccountsResponse{Accounts: []wallet.UserWalletAccount{
 			{
 				Currency: "TRY",
@@ -68,7 +68,7 @@ func TestHandler_GetUserWallets(t *testing.T) {
 		resp, err := app.Test(req)
 		assert.Nil(t, err)
 		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
-		testutil.AssertBodyEqual(t, resp.Body, expectedWalletAccountResp)
+		testhttp.AssertBodyEqual(t, resp.Body, expectedWalletAccountResp)
 	})
 
 }
@@ -77,7 +77,7 @@ func TestHandler_RegisterRoutes(t *testing.T) {
 	handler, _, mockAuthGuard := createHandlerWithMockWalletServiceAndAuthGuard(t)
 	mockAuthGuard.EXPECT().ProtectWithJWT(gomock.Any()).Return(func(ctx *fiber.Ctx) error { return nil })
 	handler.RegisterRoutes(app)
-	testutil.AssertRouteRegistered(t, app, fiber.MethodGet, "/wallets")
+	testhttp.AssertRouteRegistered(t, app, fiber.MethodGet, "/wallets")
 }
 
 func createHandlerWithMockWalletServiceAndAuthGuard(t *testing.T) (HttpHandler, *mocks.MockService, *mocks.MockAuthGuard) {
